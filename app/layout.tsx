@@ -3,25 +3,21 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'studio / Digital products with a pulse',
-  description: 'Independent web engineering and digital product craft from Barcelona.',
-  generator: 'v0.app',
+  title: 'QuantumMenu — Diseño web, menús QR y catálogos digitales',
+  description:
+    'Estudio web independiente en Barcelona. Páginas web profesionales, menús digitales QR, catálogos interactivos y soluciones digitales para negocios.',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/favicon.ico' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
     ],
-    apple: '/apple-icon.png',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+    other: {
+      rel: 'manifest',
+      url: '/site.webmanifest',
+    },
   },
 }
 
@@ -39,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className="antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
