@@ -16,7 +16,7 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
   const [greeting, setGreeting] = useState('')
   const [typedGreeting, setTypedGreeting] = useState('')
 
-  // 🔽 Referencia al final del chat para auto-scroll
+  // Referencia al final del chat para auto-scroll
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
     setIsTypingFarewell(false)
   }, [lang, setMessages])
 
-  // 🔽 AUTO-SCROLL: baja al final cuando llega un mensaje nuevo o Nova está pensando
+  // AUTO-SCROLL: baja al final cuando llega un mensaje nuevo o Nova está pensando
   useEffect(() => {
     if (!open) return
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -95,25 +95,90 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
             <div className="mascot-heading">
               <div><strong>Nova</strong><span>{lang === 'es' ? 'Asistente de QuantumMenu' : lang === 'ca' ? 'Assistent de QuantumMenu' : 'QuantumMenu assistant'}</span></div>
             </div>
-            <div className="mascot-header-actions"><button className="mascot-clear" type="button" onClick={closeChat} aria-label={lang === 'es' ? 'Limpiar chat' : lang === 'ca' ? 'Netejar xat' : 'Clear chat'}>{lang === 'es' ? 'Limpiar' : lang === 'ca' ? 'Netejar' : 'Clear'}</button><button className="mascot-close" type="button" onClick={closeChat} aria-label={lang === 'es' ? 'Cerrar asistente' : lang === 'ca' ? 'Tancar assistent' : 'Close assistant'}><X size={16} /></button></div>
+            <div className="mascot-header-actions">
+              <button className="mascot-clear" type="button" onClick={closeChat} aria-label={lang === 'es' ? 'Limpiar chat' : lang === 'ca' ? 'Netejar xat' : 'Clear chat'}>{lang === 'es' ? 'Limpiar' : lang === 'ca' ? 'Netejar' : 'Clear'}</button>
+              <button className="mascot-close" type="button" onClick={closeChat} aria-label={lang === 'es' ? 'Cerrar asistente' : lang === 'ca' ? 'Tancar assistent' : 'Close assistant'}><X size={16} /></button>
+            </div>
           </div>
           <div className="mascot-messages" aria-live="polite">
-            {messages.length === 0 && !hasVisited && <div className="mascot-welcome"><Sparkles size={18} /><p>{greeting}<br /><span>{lang === 'es' ? 'Cuéntame tu idea, aunque escribas rápido o con errores: te entenderé.' : lang === 'ca' ? 'Explica\'m la teva idea, encara que escriguis ràpid o amb errors: t\'entendré.' : 'Tell me your idea, even with typos: I will understand.'}</span></p></div>}
-            {messages.map((message) => <div className={`mascot-message ${message.role === 'user' ? 'from-user' : 'from-nova'}`} key={message.id}>{message.parts.map((part, index) => part.type === 'text' ? <span key={`${message.id}-${index}`}>{part.text}</span> : null)}</div>)}
-            {status === 'submitted' && <div className="mascot-message from-nova is-thinking">{lang === 'es' ? 'Nova está pensando' : lang === 'ca' ? 'Nova està pensant' : 'Nova is thinking'}<span>...</span></div>}
-            {/* 🔽 Ancla invisible al final para el auto-scroll */}
+            {messages.length === 0 && !hasVisited && (
+              <div className="mascot-welcome">
+                <Sparkles size={18} />
+                <p>
+                  {greeting}<br />
+                  <span>{lang === 'es' ? 'Cuéntame tu idea, aunque escribas rápido o con errores: te entenderé.' : lang === 'ca' ? 'Explica\'m la teva idea, encara que escriguis ràpid o amb errors: t\'entendré.' : 'Tell me your idea, even with typos: I will understand.'}</span>
+                </p>
+              </div>
+            )}
+            {messages.map((message) => (
+              <div className={`mascot-message ${message.role === 'user' ? 'from-user' : 'from-nova'}`} key={message.id}>
+                {message.parts.map((part, index) => part.type === 'text' ? <span key={`${message.id}-${index}`}>{part.text}</span> : null)}
+              </div>
+            ))}
+            {status === 'submitted' && (
+              <div className="mascot-message from-nova is-thinking">
+                {lang === 'es' ? 'Nova está pensando' : lang === 'ca' ? 'Nova està pensant' : 'Nova is thinking'}<span>...</span>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
           <form className="mascot-form" onSubmit={submit}>
-            <input value={input} onChange={(event) => setInput(event.target.value)} placeholder={lang === 'es' ? 'Pregúntale algo a Nova...' : lang === 'ca' ? 'Pregunta-li alguna cosa a Nova...' : 'Ask Nova anything...'} aria-label={lang === 'es' ? 'Mensaje para Nova' : lang === 'ca' ? 'Missatge per a Nova' : 'Message Nova'} disabled={status !== 'ready'} />
-            <button type="submit" aria-label={lang === 'es' ? 'Enviar mensaje' : lang === 'ca' ? 'Enviar missatge' : 'Send message'} disabled={!input.trim() || status !== 'ready'}><Send size={16} /></button>
+            <input
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder={lang === 'es' ? 'Pregúntale algo a Nova...' : lang === 'ca' ? 'Pregunta-li alguna cosa a Nova...' : 'Ask Nova anything...'}
+              aria-label={lang === 'es' ? 'Mensaje para Nova' : lang === 'ca' ? 'Missatge per a Nova' : 'Message Nova'}
+              disabled={status !== 'ready'}
+            />
+            <button
+              type="submit"
+              aria-label={lang === 'es' ? 'Enviar mensaje' : lang === 'ca' ? 'Enviar missatge' : 'Send message'}
+              disabled={!input.trim() || status !== 'ready'}
+            >
+              <Send size={16} />
+            </button>
           </form>
         </section>
       )}
-      {!open && <div className="mascot-speech" aria-live="polite">{farewell || (!hasVisited && typedGreeting)}{!farewell && !hasVisited && typedGreeting.length < greeting.length && <span className="typing-caret" aria-hidden="true">▋</span>}</div>}
-      <button className="mascot-trigger" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? (lang === 'es' ? 'Cerrar asistente de Nova' : lang === 'ca' ? 'Tancar assistent de Nova' : 'Close Nova assistant') : (lang === 'es' ? 'Abrir asistente de Nova' : lang === 'ca' ? 'Obrir assistent de Nova' : 'Open Nova assistant')}>
-        <span className="mascot-avatar" role="img" aria-label="Nova, asistente robot futurista"><span className="live-robot" aria-hidden="true"><span className="robot-antenna" /><span className="robot-ear left" /><span className="robot-ear right" /><span className="robot-head"><span className="robot-eye left" /><span className="robot-eye right" /><span className="robot-mouth" /></span><span className="robot-body"><span className="robot-core" /><span className="robot-arm left" /><span className="robot-arm right" /></span><span className="robot-shadow" /></span></span>
-
+      {!open && (
+        <div
+          className="mascot-speech"
+          aria-live="polite"
+          role="button"
+          tabIndex={0}
+          onClick={() => setOpen(true)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpen(true) }}
+          style={{ cursor: 'pointer' }}
+        >
+          {farewell || (!hasVisited && typedGreeting)}
+          {!farewell && !hasVisited && typedGreeting.length < greeting.length && <span className="typing-caret" aria-hidden="true">▋</span>}
+        </div>
+      )}
+      <button
+        className="mascot-trigger"
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-label={open ? (lang === 'es' ? 'Cerrar asistente de Nova' : lang === 'ca' ? 'Tancar assistent de Nova' : 'Close Nova assistant') : (lang === 'es' ? 'Abrir asistente de Nova' : lang === 'ca' ? 'Obrir assistent de Nova' : 'Open Nova assistant')}
+      >
+        <span className="mascot-avatar" role="img" aria-label="Nova, asistente robot futurista">
+          <span className="live-robot" aria-hidden="true">
+            <span className="robot-antenna" />
+            <span className="robot-ear left" />
+            <span className="robot-ear right" />
+            <span className="robot-head">
+              <span className="robot-eye left" />
+              <span className="robot-eye right" />
+              <span className="robot-mouth" />
+            </span>
+            <span className="robot-body">
+              <span className="robot-core" />
+              <span className="robot-arm left" />
+              <span className="robot-arm right" />
+            </span>
+            <span className="robot-shadow" />
+          </span>
+        </span>
       </button>
     </div>
   )
