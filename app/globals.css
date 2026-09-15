@@ -374,10 +374,10 @@ body { background: #000; }
 }
 
 /* ============================================
-   FIX MÓVIL v2: Admin + Login + Nova final
+   FIX MÓVIL v3: Nova más grande + panel ancho
    ============================================ */
 @media (max-width: 760px) {
-  /* 1. MOSTRAR el nombre de usuario del admin en móvil */
+  /* 1. Mostrar el nombre del admin en móvil */
   .admin-user {
     display: flex !important;
     font-size: 10px !important;
@@ -387,8 +387,8 @@ body { background: #000; }
     height: 28px !important;
     font-size: 9px !important;
   }
-  
-  /* 2. Header del admin: que quepa bien */
+
+  /* 2. Header del admin */
   .admin-header {
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -398,8 +398,8 @@ body { background: #000; }
   .admin-header h1 {
     font-size: 28px !important;
   }
-  
-  /* 3. Login: que el brand no se solape con el card */
+
+  /* 3. Login */
   .admin-login-brand {
     top: 12px !important;
     left: 16px !important;
@@ -419,8 +419,8 @@ body { background: #000; }
     width: 260px !important;
     height: 260px !important;
   }
-  
-  /* 4. Sidebar del admin: navegación horizontal con scroll */
+
+  /* 4. Sidebar del admin: navegación horizontal */
   .admin-sidebar {
     padding: 16px 14px !important;
   }
@@ -442,9 +442,86 @@ body { background: #000; }
     background: rgba(22,183,127,.15) !important;
     border-color: var(--green) !important;
   }
-  
-  /* 5. Nova más arriba para no chocar con WhatsApp */
+
+  /* 5. Nova MÁS GRANDE en móvil (76px) */
+  .mascot-assistant .mascot-trigger,
+  .mascot-assistant .mascot-avatar {
+    width: 76px !important;
+    height: 76px !important;
+  }
+  .mascot-assistant .live-robot {
+    transform: scale(.48) !important;
+  }
+
+  /* 6. Nova reposicionada */
   .mascot-assistant {
+    right: 12px !important;
     bottom: 100px !important;
+    z-index: 90 !important;
+  }
+
+  /* 7. Panel del chat MÁS GRANDE Y ANCHO */
+  .mascot-assistant .mascot-panel {
+    width: calc(100vw - 24px) !important;
+    max-width: 420px !important;
+    height: min(72svh, 560px) !important;
+    right: 0 !important;
+    bottom: 90px !important;
+    border-radius: 14px !important;
+  }
+
+  /* 8. Mensajes y texto del chat más legibles */
+  .mascot-assistant .mascot-messages {
+    padding: 18px 16px !important;
+    gap: 12px !important;
+  }
+  .mascot-assistant .mascot-message {
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+    padding: 12px 14px !important;
+    max-width: 90% !important;
+  }
+  .mascot-assistant .mascot-welcome {
+    font-size: 13px !important;
+  }
+  .mascot-assistant .mascot-welcome p {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+  .mascot-assistant .mascot-welcome span {
+    font-size: 12px !important;
+  }
+
+  /* 9. Header del chat con más aire */
+  .mascot-assistant .mascot-panel-header {
+    padding: 14px 16px !important;
+  }
+  .mascot-assistant .mascot-heading strong {
+    font-size: 14px !important;
+  }
+  .mascot-assistant .mascot-heading span {
+    font-size: 10px !important;
+  }
+
+  /* 10. Input del chat más cómodo */
+  .mascot-assistant .mascot-form {
+    padding: 12px !important;
+  }
+  .mascot-assistant .mascot-form input {
+    font-size: 14px !important;
+    padding: 13px 14px !important;
+  }
+  .mascot-assistant .mascot-form button {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* 11. Burbuja de saludo más ancha */
+  .mascot-assistant .mascot-speech {
+    width: min(280px, calc(100vw - 32px)) !important;
+    max-width: 280px !important;
+    padding: 12px 14px !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
   }
 }
