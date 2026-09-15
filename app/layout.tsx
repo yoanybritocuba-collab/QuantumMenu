@@ -1,6 +1,5 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { WhatsAppButton } from '@/components/whatsapp-button'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -39,8 +38,6 @@ export default function RootLayout({
     <html lang="es">
       <body className="antialiased">
         {children}
-        {/* 🔽 Botón flotante de WhatsApp — cambia el teléfono por el tuyo real */}
-        <WhatsAppButton phone="34600000000" position="left" />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

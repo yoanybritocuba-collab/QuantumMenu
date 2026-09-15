@@ -264,264 +264,58 @@ body { background: #000; }
 .mascot-assistant .mascot-speech { bottom: 8px !important; margin-bottom: 0 !important; transform: none !important; width: min(285px, calc(100vw - 32px)); max-width: 285px; min-height: 0 !important; height: auto !important; padding: 10px 13px !important; font-size: 11px; line-height: 1.45; white-space: normal !important; overflow-wrap: anywhere; text-align: left; }.typing-caret { display: inline-block; margin-left: 2px; color: var(--green); animation: typingBlink .7s steps(1) infinite; } @keyframes typingBlink { 50% { opacity: 0; } }
 @media (max-width: 760px) { .mascot-assistant { right: 15px !important; bottom: 18px !important; }.mascot-assistant .mascot-trigger, .mascot-assistant .mascot-avatar { width: 42px !important; height: 42px !important; }.mascot-assistant .live-robot { transform: scale(.26) !important; }.mascot-assistant .mascot-panel { bottom: 45px !important; } }
 
-/* ================================
-   WhatsApp flotante — QuantumMenu
-   ================================ */
-.whatsapp-button {
-  position: fixed;
-  bottom: 32px;
-  z-index: 70;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 58px;
-  height: 58px;
-  padding: 0;
-  border-radius: 50%;
-  background: #16b77f;
-  color: #ffffff;
-  box-shadow: 0 0 26px rgba(57, 217, 138, .45), 0 12px 34px rgba(0, 0, 0, .55);
-  text-decoration: none;
-  opacity: 0;
-  transform: scale(.5);
-  transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, opacity .45s ease, background .3s ease;
-}
-
-.whatsapp-button.is-visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.whatsapp-button:hover {
-  transform: scale(1.1);
-  background: #39d98a;
-  box-shadow: 0 0 34px rgba(57, 217, 138, .72), 0 14px 40px rgba(0, 0, 0, .6);
-}
-
-.whatsapp-left { left: 32px; }
-.whatsapp-right { right: 32px; }
-
-.whatsapp-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 0 6px rgba(57, 217, 138, .5));
-}
-
-.whatsapp-tooltip {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(5, 12, 9, .96);
-  border: 1px solid rgba(57, 217, 138, .35);
-  color: #eaf4ef;
-  padding: 9px 14px;
-  border-radius: 10px;
-  font-size: 11px;
-  letter-spacing: .02em;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s ease, transform .25s ease;
-  font-weight: 500;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .55), 0 0 18px rgba(57, 217, 138, .16);
-}
-
-.whatsapp-left .whatsapp-tooltip {
-  left: calc(100% + 12px);
-  transform: translateY(-50%) translateX(-6px);
-}
-
-.whatsapp-right .whatsapp-tooltip {
-  right: calc(100% + 12px);
-  transform: translateY(-50%) translateX(6px);
-}
-
-.whatsapp-tooltip.is-showing {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-
-.whatsapp-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: #39d98a;
-  animation: whatsappPulse 2.2s ease-out infinite;
-  z-index: -1;
-}
-
-@keyframes whatsappPulse {
-  0% { transform: scale(1); opacity: .55; }
-  100% { transform: scale(1.7); opacity: 0; }
-}
-
-@media (max-width: 760px) {
-  .whatsapp-button {
-    width: 52px;
-    height: 52px;
-    bottom: 20px;
-  }
-  .whatsapp-left { left: 15px; }
-  .whatsapp-right { right: 15px; }
-  .whatsapp-tooltip { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .whatsapp-button::before { animation: none; }
-  .whatsapp-button { transition: none; }
-}
-
 /* ============================================
    FIX MÓVIL v3: Nova más grande + panel ancho
    ============================================ */
 @media (max-width: 760px) {
-  /* 1. Mostrar el nombre del admin en móvil */
-  .admin-user {
-    display: flex !important;
-    font-size: 10px !important;
-  }
-  .admin-avatar {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 9px !important;
-  }
+  .admin-user { display: flex !important; font-size: 10px !important; }
+  .admin-avatar { width: 28px !important; height: 28px !important; font-size: 9px !important; }
+  .admin-header { flex-direction: column !important; align-items: flex-start !important; gap: 14px !important; padding-bottom: 20px !important; }
+  .admin-header h1 { font-size: 28px !important; }
+  .admin-login-brand { top: 12px !important; left: 16px !important; font-size: 13px !important; }
+  .admin-login-card { padding: 24px 18px !important; margin-top: 40px !important; }
+  .admin-login-card h1 { font-size: 32px !important; }
+  .admin-login-shell { padding: 20px 14px !important; }
+  .admin-login-orb { width: 260px !important; height: 260px !important; }
+  .admin-sidebar { padding: 16px 14px !important; }
+  .admin-sidebar nav { display: flex !important; gap: 6px !important; overflow-x: auto !important; padding-bottom: 6px !important; }
+  .admin-sidebar nav button { padding: 8px 12px !important; font-size: 11px !important; border-radius: 20px !important; border: 1px solid var(--line) !important; white-space: nowrap !important; min-width: auto !important; }
+  .admin-sidebar nav button.selected { background: rgba(22,183,127,.15) !important; border-color: var(--green) !important; }
+  .mascot-assistant .mascot-trigger, .mascot-assistant .mascot-avatar { width: 76px !important; height: 76px !important; }
+  .mascot-assistant .live-robot { transform: scale(.48) !important; }
+  .mascot-assistant { right: 12px !important; bottom: 100px !important; z-index: 90 !important; }
+  .mascot-assistant .mascot-panel { width: calc(100vw - 24px) !important; max-width: 420px !important; height: min(72svh, 560px) !important; right: 0 !important; bottom: 90px !important; border-radius: 14px !important; }
+  .mascot-assistant .mascot-messages { padding: 18px 16px !important; gap: 12px !important; }
+  .mascot-assistant .mascot-message { font-size: 14px !important; line-height: 1.55 !important; padding: 12px 14px !important; max-width: 90% !important; }
+  .mascot-assistant .mascot-welcome { font-size: 13px !important; }
+  .mascot-assistant .mascot-welcome p { font-size: 13px !important; line-height: 1.6 !important; }
+  .mascot-assistant .mascot-welcome span { font-size: 12px !important; }
+  .mascot-assistant .mascot-panel-header { padding: 14px 16px !important; }
+  .mascot-assistant .mascot-heading strong { font-size: 14px !important; }
+  .mascot-assistant .mascot-heading span { font-size: 10px !important; }
+  .mascot-assistant .mascot-form { padding: 12px !important; }
+  .mascot-assistant .mascot-form input { font-size: 14px !important; padding: 13px 14px !important; }
+  .mascot-assistant .mascot-form button { width: 44px !important; height: 44px !important; }
+  .mascot-assistant .mascot-speech { width: min(280px, calc(100vw - 32px)) !important; max-width: 280px !important; padding: 12px 14px !important; font-size: 12px !important; line-height: 1.5 !important; }
+}
 
-  /* 2. Header del admin */
-  .admin-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 14px !important;
-    padding-bottom: 20px !important;
-  }
-  .admin-header h1 {
-    font-size: 28px !important;
-  }
+/* ============================================
+   WhatsApp en el footer
+   ============================================ */
+.footer-whatsapp-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: var(--green) !important;
+  font-weight: 500 !important;
+  transition: color .25s ease, text-shadow .25s ease !important;
+}
 
-  /* 3. Login */
-  .admin-login-brand {
-    top: 12px !important;
-    left: 16px !important;
-    font-size: 13px !important;
-  }
-  .admin-login-card {
-    padding: 24px 18px !important;
-    margin-top: 40px !important;
-  }
-  .admin-login-card h1 {
-    font-size: 32px !important;
-  }
-  .admin-login-shell {
-    padding: 20px 14px !important;
-  }
-  .admin-login-orb {
-    width: 260px !important;
-    height: 260px !important;
-  }
+.footer-whatsapp-link:hover {
+  color: var(--gold-bright) !important;
+  text-shadow: 0 0 14px rgba(243,203,120,.35) !important;
+}
 
-  /* 4. Sidebar del admin: navegación horizontal */
-  .admin-sidebar {
-    padding: 16px 14px !important;
-  }
-  .admin-sidebar nav {
-    display: flex !important;
-    gap: 6px !important;
-    overflow-x: auto !important;
-    padding-bottom: 6px !important;
-  }
-  .admin-sidebar nav button {
-    padding: 8px 12px !important;
-    font-size: 11px !important;
-    border-radius: 20px !important;
-    border: 1px solid var(--line) !important;
-    white-space: nowrap !important;
-    min-width: auto !important;
-  }
-  .admin-sidebar nav button.selected {
-    background: rgba(22,183,127,.15) !important;
-    border-color: var(--green) !important;
-  }
-
-  /* 5. Nova MÁS GRANDE en móvil (76px) */
-  .mascot-assistant .mascot-trigger,
-  .mascot-assistant .mascot-avatar {
-    width: 76px !important;
-    height: 76px !important;
-  }
-  .mascot-assistant .live-robot {
-    transform: scale(.48) !important;
-  }
-
-  /* 6. Nova reposicionada */
-  .mascot-assistant {
-    right: 12px !important;
-    bottom: 100px !important;
-    z-index: 90 !important;
-  }
-
-  /* 7. Panel del chat MÁS GRANDE Y ANCHO */
-  .mascot-assistant .mascot-panel {
-    width: calc(100vw - 24px) !important;
-    max-width: 420px !important;
-    height: min(72svh, 560px) !important;
-    right: 0 !important;
-    bottom: 90px !important;
-    border-radius: 14px !important;
-  }
-
-  /* 8. Mensajes y texto del chat más legibles */
-  .mascot-assistant .mascot-messages {
-    padding: 18px 16px !important;
-    gap: 12px !important;
-  }
-  .mascot-assistant .mascot-message {
-    font-size: 14px !important;
-    line-height: 1.55 !important;
-    padding: 12px 14px !important;
-    max-width: 90% !important;
-  }
-  .mascot-assistant .mascot-welcome {
-    font-size: 13px !important;
-  }
-  .mascot-assistant .mascot-welcome p {
-    font-size: 13px !important;
-    line-height: 1.6 !important;
-  }
-  .mascot-assistant .mascot-welcome span {
-    font-size: 12px !important;
-  }
-
-  /* 9. Header del chat con más aire */
-  .mascot-assistant .mascot-panel-header {
-    padding: 14px 16px !important;
-  }
-  .mascot-assistant .mascot-heading strong {
-    font-size: 14px !important;
-  }
-  .mascot-assistant .mascot-heading span {
-    font-size: 10px !important;
-  }
-
-  /* 10. Input del chat más cómodo */
-  .mascot-assistant .mascot-form {
-    padding: 12px !important;
-  }
-  .mascot-assistant .mascot-form input {
-    font-size: 14px !important;
-    padding: 13px 14px !important;
-  }
-  .mascot-assistant .mascot-form button {
-    width: 44px !important;
-    height: 44px !important;
-  }
-
-  /* 11. Burbuja de saludo más ancha */
-  .mascot-assistant .mascot-speech {
-    width: min(280px, calc(100vw - 32px)) !important;
-    max-width: 280px !important;
-    padding: 12px 14px !important;
-    font-size: 12px !important;
-    line-height: 1.5 !important;
-  }
+.footer-whatsapp-link svg {
+  filter: drop-shadow(0 0 4px rgba(57,217,138,.4));
 }

@@ -134,6 +134,8 @@ const services = [
 
 const tech = ['TypeScript', 'React / Next.js', 'Node.js', 'Postgres', 'Figma', 'AI interfaces']
 
+const WHATSAPP_URL = 'https://wa.me/34624497851?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20una%20web%20para%20mi%20negocio.'
+
 export default function Page() {
   const [lang, setLang] = useState<Lang>('es')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -197,7 +199,44 @@ export default function Page() {
 
       <section className="section-wrap admin-cta-section"><div className="section-label"><span>{t.adminKicker}</span><span>Protected workspace</span></div><div className="admin-cta"><div><h2>{t.adminTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><p>{t.adminText}</p></div></div></section>
 
-      <footer className="site-footer section-wrap"><div className="footer-top"><a href="#top" className="brand"><img src="/logo.png" alt="QuantumMenu logo" /><span>QuantumMenu</span></a><p>{t.footer}</p><div className="footer-contact"><a href="mailto:yoanybritocuba@gmail.com">yoanybritocuba@gmail.com</a><a href="tel:+34624497851">+34 624 497 851</a></div><div className="socials"><a href="mailto:yoanybritocuba@gmail.com" aria-label="Email"><Mail size={17} /></a><a href="tel:+34624497851" aria-label="Phone"><Phone size={17} /></a></div></div><div className="footer-bottom"><span>© 2026 Studio / All systems nominal</span><span>Barcelona, Spain</span><a href="/admin">Admin access <ArrowUpRight size={13} /></a></div></footer>
+      <footer className="site-footer section-wrap">
+        <div className="footer-top">
+          <a href="#top" className="brand">
+            <img src="/logo.png" alt="QuantumMenu logo" />
+            <span>QuantumMenu</span>
+          </a>
+          <p>{t.footer}</p>
+          <div className="footer-contact">
+            <a href="mailto:yoanybritocuba@gmail.com">yoanybritocuba@gmail.com</a>
+            <a href="tel:+34624497851">+34 624 497 851</a>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-whatsapp-link"
+            >
+              <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+                <path d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.888 2.722.888.817 0 2.26-.79 2.605-1.53.143-.31.258-.645.258-.99 0-.258-.144-.402-.402-.53-.486-.244-1.36-.703-1.85-.96-.147-.087-.314-.13-.474-.13zM16.005 4C9.376 4 4 9.376 4 16.006c0 2.115.558 4.098 1.52 5.827L4 28l6.343-1.489a11.94 11.94 0 0 0 5.662 1.436c6.63 0 12.005-5.376 12.005-12.006S22.635 4 16.005 4zm0 21.788c-1.73 0-3.428-.516-4.84-1.475l-.36-.227-3.6.845.96-3.502-.236-.376a9.744 9.744 0 0 1-1.475-5.174c0-5.405 4.4-9.805 9.805-9.805s9.805 4.4 9.805 9.805-4.4 9.81-9.805 9.81z" />
+              </svg>
+              WhatsApp
+            </a>
+          </div>
+          <div className="socials">
+            <a href="mailto:yoanybritocuba@gmail.com" aria-label="Email"><Mail size={17} /></a>
+            <a href="tel:+34624497851" aria-label="Phone"><Phone size={17} /></a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+              <svg viewBox="0 0 32 32" width="17" height="17" fill="currentColor">
+                <path d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.888 2.722.888.817 0 2.26-.79 2.605-1.53.143-.31.258-.645.258-.99 0-.258-.144-.402-.402-.53-.486-.244-1.36-.703-1.85-.96-.147-.087-.314-.13-.474-.13zM16.005 4C9.376 4 4 9.376 4 16.006c0 2.115.558 4.098 1.52 5.827L4 28l6.343-1.489a11.94 11.94 0 0 0 5.662 1.436c6.63 0 12.005-5.376 12.005-12.006S22.635 4 16.005 4zm0 21.788c-1.73 0-3.428-.516-4.84-1.475l-.36-.227-3.6.845.96-3.502-.236-.376a9.744 9.744 0 0 1-1.475-5.174c0-5.405 4.4-9.805 9.805-9.805s9.805 4.4 9.805 9.805-4.4 9.81-9.805 9.81z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>© 2026 Studio / All systems nominal</span>
+          <span>Barcelona, Spain</span>
+          <a href="/admin">Admin access <ArrowUpRight size={13} /></a>
+        </div>
+      </footer>
       <MascotAssistant lang={lang} />
     </main>
   )
