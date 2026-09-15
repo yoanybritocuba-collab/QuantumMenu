@@ -1,0 +1,55 @@
+﻿📁 app/
+  📁 admin/
+    📁 login/
+      📄 page.tsx
+    📄 page.tsx
+  📁 api/
+    📁 chat/
+      📄 route.ts
+  📄 globals.css
+  📄 layout.tsx
+  📄 page.tsx
+📁 components/
+  📁 ui/
+    📄 button.tsx
+  📄 mascot-assistant.tsx
+📁 lib/
+  📁 supabase/
+    📄 client.ts
+  📄 utils.ts
+📁 public/
+  📄 apple-icon.png
+  📄 dev-workspace-01.png
+  📄 dev-workspace-02.png
+  📄 dev-workspace-03.png
+  📄 dev-workspace-04.png
+  📄 dev-workspace-05.png
+  📄 dev-workspace-06.png
+  📄 hero-dev-01.png
+  📄 hero-dev-02.png
+  📄 hero-dev-03.png
+  📄 icon.svg
+  📄 icon-dark-32x32.png
+  📄 icon-light-32x32.png
+  📄 logo.png
+  📄 placeholder.jpg
+  📄 placeholder.svg
+  📄 placeholder-logo.png
+  📄 placeholder-logo.svg
+  📄 placeholder-user.jpg
+  📄 quantum-loona.png
+  📄 quantum-loona-3d.png
+  📄 quantum-loona-clean.png
+  📄 quantum-mascot.png
+  📄 quantum-robot.png
+📄 .gitignore
+📄 components.json
+📄 estructura.txt
+📄 next.config.mjs
+📄 next-env.d.ts
+📄 package.json
+📄 package-lock.json
+📄 pnpm-lock.yaml
+📄 pnpm-workspace.yaml
+📄 postcss.config.mjs
+📄 tsconfig.json
