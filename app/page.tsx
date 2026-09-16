@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { MascotAssistant } from '@/components/mascot-assistant'
+import { QuoteBuilder } from '@/components/quote-builder'
+import { ProjectModal } from '@/components/project-modal'
 import {
   ArrowUpRight,
   Check,
@@ -141,6 +143,7 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [sent, setSent] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
+  const [selectedProject, setSelectedProject] = useState<(typeof projects)[number] | null>(null)
   const t = useMemo(() => copy[lang], [lang])
 
   useEffect(() => {
@@ -189,11 +192,13 @@ export default function Page() {
         <div className="about-layout"><div><h2>{t.aboutTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2></div><div className="about-detail"><p className="large-copy">{t.aboutText}</p><div className="stack-block"><span className="mini-label">{t.stack}</span><div className="stack-list">{['Next.js', 'TypeScript', 'Supabase', 'AI'].map((item) => <span key={item}><Check size={13} />{item}</span>)}</div></div></div></div>
       </section>
 
-      <section id="work" className="section-wrap work-section"><div className="section-label"><span>{t.projectKicker}</span><span>03 / 03</span></div><div className="section-heading"><h2>{t.projectTitle}</h2><span className="section-note">Selected work / 2024—26</span></div><div className="project-grid">{projects.map((project) => { const ProjectIcon = project.icon; return <article className="project-card" key={project.number}><div className="project-image" style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.72)), url(${project.image})` }}><div className="image-grid" /><div className="project-number">{project.number}</div><div className="project-type-badge"><ProjectIcon size={18} /><span>{project.title[lang]}</span></div><div className="project-symbol" style={{ color: project.accent, borderColor: project.accent }}><ProjectIcon size={42} strokeWidth={1.2} /><span>{project.title.en === 'QR Menu' ? 'QR' : project.title.en === 'Business Catalogue' ? 'CATALOGUE' : project.title.en === 'Booking Website' ? 'BOOKING' : project.title.en === 'Online Store' ? 'SHOP' : project.title.en === 'Professional Portfolio' ? 'PROFILE' : project.title.en === 'Landing Page' ? 'LANDING' : project.title.en === 'Restaurant Website' ? 'MENU' : 'EDITORIAL'}</span></div>{project.title.en === 'QR Menu' && <div className="qr-badge"><QrCode size={46} /><span>{lang === 'es' ? 'ESCANEA / PIDE' : lang === 'ca' ? 'ESCANEJA / DEMANA' : 'SCAN / ORDER'}</span></div>}<div className="project-orbit" style={{ borderColor: project.accent }} /><ExternalLink className="project-arrow" size={20} /></div><div className="project-info"><div><h3>{project.title[lang]}</h3><p>{project.type[lang]}</p></div><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></article> })}</div></section>
+      <section id="work" className="section-wrap work-section"><div className="section-label"><span>{t.projectKicker}</span><span>03 / 03</span></div><div className="section-heading"><h2>{t.projectTitle}</h2><span className="section-note">Selected work / 2024—26</span></div><div className="project-grid">{projects.map((project) => { const ProjectIcon = project.icon; return <article className="project-card" key={project.number} onClick={() => setSelectedProject(project)} style={{ cursor: 'pointer' }}><div className="project-image" style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.72)), url(${project.image})` }}><div className="image-grid" /><div className="project-number">{project.number}</div><div className="project-type-badge"><ProjectIcon size={18} /><span>{project.title[lang]}</span></div><div className="project-symbol" style={{ color: project.accent, borderColor: project.accent }}><ProjectIcon size={42} strokeWidth={1.2} /><span>{project.title.en === 'QR Menu' ? 'QR' : project.title.en === 'Business Catalogue' ? 'CATALOGUE' : project.title.en === 'Booking Website' ? 'BOOKING' : project.title.en === 'Online Store' ? 'SHOP' : project.title.en === 'Professional Portfolio' ? 'PROFILE' : project.title.en === 'Landing Page' ? 'LANDING' : project.title.en === 'Restaurant Website' ? 'MENU' : 'EDITORIAL'}</span></div>{project.title.en === 'QR Menu' && <div className="qr-badge"><QrCode size={46} /><span>{lang === 'es' ? 'ESCANEA / PIDE' : lang === 'ca' ? 'ESCANEJA / DEMANA' : 'SCAN / ORDER'}</span></div>}<div className="project-orbit" style={{ borderColor: project.accent }} /><ExternalLink className="project-arrow" size={20} /></div><div className="project-info"><div><h3>{project.title[lang]}</h3><p>{project.type[lang]}</p></div><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></article> })}</div></section>
 
       <section id="services" className="section-wrap services-section"><div className="section-label"><span>{t.servicesKicker}</span><span>What I do</span></div><div className="services-layout"><h2>{t.servicesTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><div className="service-list">{services.map(({ icon: Icon, title, text }, i) => <div className="service-row" key={title.en}><span className="service-index">0{i + 1}</span><Icon size={21} /><div><h3>{title[lang]}</h3><p>{text[lang]}</p></div><ArrowUpRight className="service-arrow" size={18} /></div>)}</div></div></section>
 
       <section className="section-wrap skills-section"><div className="section-label"><span>{t.skillsKicker}</span><span>Tools / process</span></div><div className="skills-layout"><h2>{t.skillsTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><div className="tech-cloud">{tech.map((item, i) => <span key={item} className={`tech-chip chip-${i}`}>{item}</span>)}</div></div></section>
+
+      <QuoteBuilder lang={lang} />
 
       <section id="contact" className="section-wrap contact-section"><div className="section-label"><span>{t.contactKicker}</span><span>Let&apos;s talk</span></div><div className="contact-layout"><div><h2>{t.contactTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><p className="contact-copy">{t.contactText}</p><a className="email-link" href="mailto:yoanybritocuba@gmail.com">yoanybritocuba@gmail.com <ArrowUpRight size={16} /></a></div><form className="contact-form" onSubmit={(event) => { event.preventDefault(); setSent(true) }}>{sent ? <div className="form-success"><Check size={28} /><h3>Message received.</h3><p>Thanks for reaching out. I&apos;ll be in touch soon.</p></div> : <><label>Name<input required name="name" placeholder="Your name" /></label><label>Email<input required type="email" name="email" placeholder="you@company.com" /></label><label>What are we building?<textarea required name="message" rows={4} placeholder="A little about the project..." /></label><button className="button button-primary" type="submit">{t.send}<MoveRight size={17} /></button></>}</form></div></section>
 
@@ -238,6 +243,7 @@ export default function Page() {
         </div>
       </footer>
       <MascotAssistant lang={lang} />
+      <ProjectModal project={selectedProject} lang={lang} onClose={() => setSelectedProject(null)} />
     </main>
   )
 }
