@@ -1,0 +1,53 @@
+/* ============================================
+   BASE — reset y variables globales
+   ============================================ */
+
+:root {
+  --background: #000000;
+  --foreground: #16b77f;
+  --green: #16b77f;
+  --green-bright: #39ff9a;
+  --green-dim: #0c6d4c;
+  --gold: #d9a957;
+  --gold-bright: #e8bd72;
+  --muted: #16b77f;
+  --line: rgba(22, 183, 127, .28);
+  --glass: #000000;
+  --radius: 2px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--line);
+  --color-primary: var(--green);
+  --color-muted-foreground: var(--muted);
+}
+
+* { box-sizing: border-box; border-color: var(--line); }
+
+html { scroll-behavior: smooth; background: #000; }
+
+body {
+  margin: 0;
+  background: #000;
+  color: var(--green);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection { background: var(--green); color: #000; }
+a { color: inherit; text-decoration: none; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+
+@layer base {
+  * { outline-color: rgba(22, 183, 127, .5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}

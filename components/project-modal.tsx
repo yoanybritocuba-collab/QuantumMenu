@@ -1,199 +1,162 @@
 'use client'
 
 import { useEffect } from 'react'
-import { X, MessageCircle, Mail, Check, Clock, Euro } from 'lucide-react'
+import { X, Check, Clock, Euro, MessageCircle, Mail } from 'lucide-react'
 
 type Lang = 'es' | 'ca' | 'en'
 
-type Project = {
+type ProjectModalData = {
   id?: number
   number: string
-  title_es: string
-  title_ca: string
-  title_en: string
-  type_es: string
-  type_ca: string
-  type_en: string
-  description_es?: string
-  description_ca?: string
-  description_en?: string
+  title: string
+  type: string
+  description?: string
   image: string
   accent: string
-  tags?: string[]
-  tags_es?: string[]
-  tags_ca?: string[]
-  tags_en?: string[]
+  symbol: string
+  tags: string[]
+  includes: string[]
+  excludes: string[]
   price?: number
-  delivery_time_es?: string
-  delivery_time_ca?: string
-  delivery_time_en?: string
-  published?: boolean
+  deliveryTime?: string
 }
 
-type Props = {
-  project: Project | null
-  lang: Lang
+export function ProjectModal({
+  project,
+  lang = 'es',
+  onClose,
+}: {
+  project: ProjectModalData | null
+  lang?: Lang
   onClose: () => void
-}
-
-const WHATSAPP_NUMBER = '34624497851'
-const EMAIL = 'yoanybritocuba@gmail.com'
-
-export function ProjectModal({ project, lang, onClose }: Props) {
+}) {
   useEffect(() => {
-    if (!project) return
-    const handleKey = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
-    document.addEventListener('keydown', handleKey)
-    document.body.style.overflow = 'hidden'
+    if (project) {
+      document.addEventListener('keydown', onKey)
+      document.body.style.overflow = 'hidden'
+    }
     return () => {
-      document.removeEventListener('keydown', handleKey)
+      document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
   }, [project, onClose])
 
   if (!project) return null
 
-  const getTitle = () =>
-    lang === 'ca' ? project.title_ca || project.title_es : lang === 'en' ? project.title_en || project.title_es : project.title_es
-  const getType = () =>
-    lang === 'ca' ? project.type_ca || project.type_es : lang === 'en' ? project.type_en || project.type_es : project.type_es
-  const getDescription = () =>
-    lang === 'ca' ? project.description_ca || project.description_es : lang === 'en' ? project.description_en || project.description_es : project.description_es
-  const getDelivery = () =>
-    lang === 'ca' ? project.delivery_time_ca || project.delivery_time_es : lang === 'en' ? project.delivery_time_en || project.delivery_time_es : project.delivery_time_es
-
-  // Tags según idioma
-  const getTags = (): string[] => {
-    if (lang === 'ca') return project.tags_ca?.length ? project.tags_ca : (project.tags || [])
-    if (lang === 'en') return project.tags_en?.length ? project.tags_en : (project.tags || [])
-    return project.tags_es?.length ? project.tags_es : (project.tags || [])
-  }
-
-  const tags = getTags()
-
   const t = {
-    from: lang === 'es' ? 'Desde' : lang === 'ca' ? 'Des de' : 'From',
-    delivery: lang === 'es' ? 'Plazo de entrega' : lang === 'ca' ? 'Termini de lliurament' : 'Delivery time',
-    whatIncludes: lang === 'es' ? 'Qué incluye' : lang === 'ca' ? 'Què inclou' : 'What includes',
-    whatNotIncludes: lang === 'es' ? 'No incluye' : lang === 'ca' ? 'No inclou' : 'Does not include',
-    notIncluded1: lang === 'es' ? 'Dominio propio (a cargo del cliente)' : lang === 'ca' ? 'Domini propi (a càrrec del client)' : 'Own domain (paid by client)',
-    notIncluded2: lang === 'es' ? 'Correos empresariales (a cargo del cliente)' : lang === 'ca' ? 'Correus empresarials (a càrrec del client)' : 'Business emails (paid by client)',
-    hireWhatsapp: lang === 'es' ? 'Contratar por WhatsApp' : lang === 'ca' ? 'Contractar per WhatsApp' : 'Hire via WhatsApp',
-    askEmail: lang === 'es' ? 'Solicitar por email' : lang === 'ca' ? 'Sol·licitar per email' : 'Request by email',
-    close: lang === 'es' ? 'Cerrar' : lang === 'ca' ? 'Tancar' : 'Close',
+    es: {
+      includes: 'Qué incluye',
+      excludes: 'No incluye',
+      price: 'Desde',
+      delivery: 'Entrega',
+      whatsapp: 'Contratar por WhatsApp',
+      email: 'Solicitar por email',
+      close: 'Cerrar',
+      defaultExcludes: ['Dominio propio (a cargo del cliente)', 'Correos empresariales (a cargo del cliente)'],
+      waMessage: 'Hola, me interesa el proyecto',
+    },
+    ca: {
+      includes: 'Què inclou',
+      excludes: 'No inclou',
+      price: 'Des de',
+      delivery: 'Lliurament',
+      whatsapp: 'Contractar per WhatsApp',
+      email: 'Sol·licitar per correu',
+      close: 'Tancar',
+      defaultExcludes: ['Domini propi (a càrrec del client)', 'Correus empresarials (a càrrec del client)'],
+      waMessage: 'Hola, m\'interessa el projecte',
+    },
+    en: {
+      includes: 'What\'s included',
+      excludes: 'Not included',
+      price: 'From',
+      delivery: 'Delivery',
+      whatsapp: 'Order via WhatsApp',
+      email: 'Request by email',
+      close: 'Close',
+      defaultExcludes: ['Custom domain (client\'s responsibility)', 'Business emails (client\'s responsibility)'],
+      waMessage: 'Hi, I\'m interested in the project',
+    },
   }
 
-  const whatsappMsg = encodeURIComponent(
-    lang === 'es'
-      ? `Hola, me interesa el servicio "${getTitle()}". ¿Podemos hablar?`
-      : lang === 'ca'
-      ? `Hola, m'interessa el servei "${getTitle()}". Podem parlar?`
-      : `Hi, I'm interested in "${getTitle()}". Can we talk?`
-  )
+  const labels = t[lang]
+  const includes = project.includes && project.includes.length > 0 ? project.includes : project.tags
+  const excludes = project.excludes && project.excludes.length > 0 ? project.excludes : labels.defaultExcludes
 
-  const emailSubject = encodeURIComponent(`Presupuesto: ${getTitle()}`)
-  const emailBody = encodeURIComponent(
-    lang === 'es'
-      ? `Hola, me interesa el servicio "${getTitle()}". ¿Me puedes dar más información?`
-      : lang === 'ca'
-      ? `Hola, m'interessa el servei "${getTitle()}". Em pots donar més informació?`
-      : `Hi, I'm interested in "${getTitle()}". Can you give me more info?`
-  )
+  const waUrl = `https://wa.me/34624497851?text=${encodeURIComponent(`${labels.waMessage}: ${project.title}`)}`
+  const mailUrl = `mailto:yoanybritocuba@gmail.com?subject=${encodeURIComponent(project.title)}`
 
   return (
-    <div className="project-modal-backdrop" onClick={onClose} role="presentation">
-      <div
-        className="project-modal"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label={getTitle()}
-      >
-        <button className="project-modal-close" onClick={onClose} aria-label={t.close}>
-          <X size={20} />
+    <div className="project-modal-backdrop" onClick={onClose}>
+      <div className="project-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="project-modal-close" onClick={onClose} aria-label={labels.close}>
+          <X size={18} />
         </button>
 
-        <div
-          className="project-modal-image"
-          style={{
-            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.75) 100%), url(${project.image})`,
-          }}
-        >
+        <div className="project-modal-image" style={{ backgroundImage: `url(${project.image})` }}>
           <span className="project-modal-number">{project.number}</span>
         </div>
 
         <div className="project-modal-body">
-          <div className="project-modal-header">
-            <h2>{getTitle()}</h2>
-            <p>{getType()}</p>
-          </div>
+          <header className="project-modal-header">
+            <h2>{project.title}</h2>
+            <p>{project.type}</p>
+          </header>
 
-          {tags.length > 0 && (
-            <div className="project-modal-tags">
-              {tags.map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
+          {project.description && (
+            <p className="project-modal-description">{project.description}</p>
+          )}
+
+          {(project.price || project.deliveryTime) && (
+            <div className="project-modal-meta">
+              {project.price ? (
+                <span className="project-modal-meta-item">
+                  <Euro size={15} />
+                  {labels.price} {project.price}€
+                </span>
+              ) : null}
+              {project.deliveryTime ? (
+                <span className="project-modal-meta-item">
+                  <Clock size={15} />
+                  {labels.delivery}: {project.deliveryTime}
+                </span>
+              ) : null}
             </div>
           )}
 
-          {getDescription() && <p className="project-modal-description">{getDescription()}</p>}
-
-          <div className="project-modal-meta">
-            {project.price && project.price > 0 && (
-              <div className="project-modal-meta-item">
-                <Euro size={16} />
-                <span>
-                  <strong>{t.from} {project.price}€</strong>
-                </span>
-              </div>
-            )}
-            {getDelivery() && (
-              <div className="project-modal-meta-item">
-                <Clock size={16} />
-                <span>
-                  <strong>{getDelivery()}</strong>
-                </span>
-              </div>
-            )}
-          </div>
-
-          {tags.length > 0 && (
+          {includes.length > 0 && (
             <div className="project-modal-section">
-              <h3>{t.whatIncludes}</h3>
+              <h3>{labels.includes}</h3>
               <ul>
-                {tags.map((tag) => (
-                  <li key={tag}>
-                    <Check size={14} /> {tag}
-                  </li>
+                {includes.map((item) => (
+                  <li key={item}><Check size={14} /> {item}</li>
                 ))}
               </ul>
             </div>
           )}
 
-          <div className="project-modal-section project-modal-not-included">
-            <h3>{t.whatNotIncludes}</h3>
-            <ul>
-              <li>✕ {t.notIncluded1}</li>
-              <li>✕ {t.notIncluded2}</li>
-            </ul>
-          </div>
+          {excludes.length > 0 && (
+            <div className="project-modal-section project-modal-not-included">
+              <h3>{labels.excludes}</h3>
+              <ul>
+                {excludes.map((item) => (
+                  <li key={item}><X size={14} /> {item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="project-modal-actions">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMsg}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="button button-primary project-modal-cta"
-            >
-              <MessageCircle size={17} /> {t.hireWhatsapp}
+            <a href={waUrl} target="_blank" rel="noopener noreferrer" className="button button-primary project-modal-cta">
+              <MessageCircle size={16} />
+              {labels.whatsapp}
             </a>
-            <a
-              href={`mailto:${EMAIL}?subject=${emailSubject}&body=${emailBody}`}
-              className="button project-modal-cta-secondary"
-            >
-              <Mail size={17} /> {t.askEmail}
+            <a href={mailUrl} className="project-modal-cta-secondary">
+              <Mail size={14} />
+              {labels.email}
             </a>
           </div>
         </div>

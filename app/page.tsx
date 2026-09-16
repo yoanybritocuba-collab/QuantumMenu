@@ -1,248 +1,569 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { MascotAssistant } from '@/components/mascot-assistant'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { Utensils, ShoppingBag, CalendarDays, BriefcaseBusiness, Smartphone, Newspaper, ExternalLink, Globe, ChevronDown, Lock, MessageCircle, Mail, Phone } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { QuoteBuilder } from '@/components/quote-builder'
 import { ProjectModal } from '@/components/project-modal'
-import {
-  ArrowUpRight,
-  Check,
-  Code2,
-  ExternalLink,
-  Layers3,
-  Mail,
-  Phone,
-  Menu,
-  MoveRight,
-  Sparkles,
-  Settings2,
-  X,
-  Zap,
-  QrCode,
-  Utensils,
-  ShoppingBag,
-  CalendarDays,
-  BriefcaseBusiness,
-  Smartphone,
-  Newspaper,
-} from 'lucide-react'
+import { ServiceModal, type ServiceData } from '@/components/service-modal'
+import { MascotAssistant } from '@/components/mascot-assistant'
+
+type Lang = 'es' | 'ca' | 'en'
+
+type SupabaseProject = {
+  id: number
+  number: string
+  title_es: string | null
+  title_ca: string | null
+  title_en: string | null
+  type_es: string | null
+  type_ca: string | null
+  type_en: string | null
+  description_es: string | null
+  description_ca: string | null
+  description_en: string | null
+  image: string | null
+  accent: string | null
+  tags_es: string[] | null
+  tags_ca: string[] | null
+  tags_en: string[] | null
+  includes_es: string[] | null
+  includes_ca: string[] | null
+  includes_en: string[] | null
+  excludes_es: string[] | null
+  excludes_ca: string[] | null
+  excludes_en: string[] | null
+  price: number | null
+  delivery_time_es: string | null
+  delivery_time_ca: string | null
+  delivery_time_en: string | null
+  published: boolean
+}
 
 const copy = {
-  en: {
-    nav: ['About', 'Work', 'Services', 'Contact'],
-    available: 'Available for selected projects',
-    eyebrow: 'Independent web engineer / Barcelona',
-    title: 'Digital experiences\ncrafted to move.',
-    intro: 'I design and build sharp, high-performance experiences for ambitious teams that want to move the web forward.',
-    cta: 'Start a conversation',
-    work: 'View selected work',
-    aboutKicker: '01 / About',
-    aboutTitle: 'A technical partner\nfor bold ideas.',
-    aboutText: 'From first sketch to final deployment, I combine product thinking, expressive design and resilient engineering. No noise. Just thoughtful digital work that earns attention and keeps performing.',
-    stack: 'Currently working with',
-    projectKicker: '02 / Selected work',
-    projectTitle: 'Recent signals',
-    servicesKicker: '03 / Capabilities',
-    servicesTitle: 'Small team energy.\nSenior-level craft.',
-    skillsKicker: '04 / Stack',
-    skillsTitle: 'Tools for making\nthings matter.',
-    contactKicker: '05 / Contact',
-    contactTitle: 'Have a good\nproblem to solve?',
-    contactText: 'Tell me what you are building, where it hurts, and what success looks like. I will get back to you within two working days.',
-    send: 'Send enquiry',
-    footer: 'Built with curiosity, care and a little green light.',
-    adminKicker: '06 / Control room',
-    adminTitle: 'Keep every detail\nin your hands.',
-    adminText: 'Update projects, images, links and site content from one protected workspace.',
-    adminButton: 'Open admin panel',
-  },
-  ca: {
-    nav: ['Sobre mi', 'Projectes', 'Serveis', 'Contacte'],
-    available: 'Disponible per a projectes seleccionats',
-    eyebrow: 'Enginyer web independent / Barcelona',
-    title: 'Experiències digitals\nque avancen.',
-    intro: 'Dissenyo i construeixo experiències ràpides i precises per a equips ambiciosos que volen fer avançar la web.',
-    cta: 'Comencem a parlar',
-    work: 'Veure projectes',
-    aboutKicker: '01 / Sobre mi',
-    aboutTitle: 'Un soci tècnic\nper a idees valentes.',
-    aboutText: 'Des del primer esbós fins al desplegament final, combino pensament de producte, disseny expressiu i enginyeria resilient.',
-    stack: 'Treballant actualment amb',
-    projectKicker: '02 / Projectes',
-    projectTitle: 'Senyals recents',
-    servicesKicker: '03 / Capacitats',
-    servicesTitle: 'Energia d’equip petit.\nOfici sènior.',
-    skillsKicker: '04 / Stack',
-    skillsTitle: 'Eines per crear\ncoses que importen.',
-    contactKicker: '05 / Contacte',
-    contactTitle: 'Tens un bon\nproblema per resoldre?',
-    contactText: 'Explica’m què estàs construint i com és l’èxit. Et respondré en un màxim de dos dies laborables.',
-    send: 'Enviar consulta',
-    footer: 'Fet amb curiositat, cura i una mica de llum verda.',
-    adminKicker: '06 / Sala de control',
-    adminTitle: 'Cada detall\na les teves mans.',
-    adminText: 'Actualitza projectes, imatges, enllaços i contingut des d’un espai protegit.',
-    adminButton: 'Obrir panell admin',
-  },
   es: {
-    nav: ['Sobre mí', 'Proyectos', 'Servicios', 'Contacto'],
+    navWork: 'Proyectos',
+    navServices: 'Servicios',
+    navAbout: 'Sobre mí',
+    navQuote: 'Presupuesto',
     available: 'Disponible para proyectos seleccionados',
-    eyebrow: 'Ingeniero web independiente / Barcelona',
-    title: 'Experiencias digitales\nque avanzan.',
-    intro: 'Convertimos ideas en experiencias digitales que hacen crecer tu negocio.',
-    cta: 'Empecemos a hablar',
-    work: 'Ver proyectos',
+    heroTitle1: 'Diseño web',
+    heroTitle2: 'que convierte.',
+    heroIntro: 'Construyo experiencias digitales rápidas, cuidadas y orientadas a resultados para negocios que quieren crecer.',
+    heroCta: 'Ver proyectos',
+    heroWhatsapp: 'Escribir por WhatsApp',
     aboutKicker: '01 / Sobre mí',
     aboutTitle: 'Un socio técnico\npara ideas valientes.',
-    aboutText: 'Desde el primer boceto hasta el despliegue final, combino pensamiento de producto, diseño expresivo e ingeniería resiliente. Sin ruido. Solo trabajo digital que merece atención.',
+    aboutCopy: 'Soy diseñador y desarrollador web. Me obsesiona la velocidad, el detalle visual y los resultados medibles.',
     stack: 'Trabajando actualmente con',
     projectKicker: '02 / Proyectos',
     projectTitle: 'Señales recientes',
-    servicesKicker: '03 / Capacidades',
-    servicesTitle: 'Energía de equipo pequeño.\nOficio senior.',
-    skillsKicker: '04 / Stack',
-    skillsTitle: 'Herramientas para crear\ncosas que importan.',
-    contactKicker: '05 / Contacto',
-    contactTitle: '¿Tienes un buen\nproblema que resolver?',
-    contactText: 'Cuéntame qué estás construyendo, dónde duele y cómo se ve el éxito. Te responderé en un máximo de dos días laborables.',
-    send: 'Enviar consulta',
-    footer: 'Hecho con curiosidad, cuidado y un poco de luz verde.',
-    adminKicker: '06 / Sala de control',
-    adminTitle: 'Cada detalle\nen tus manos.',
-    adminText: 'Actualiza proyectos, imágenes, enlaces y contenido desde un espacio protegido.',
-    adminButton: 'Abrir panel admin',
+    servicesKicker: '03 / Servicios',
+    servicesTitle: 'Qué ofrezco',
+    footerTagline: 'Diseño y desarrollo web profesional para negocios que quieren crecer.',
+    footerNav: 'Navegación',
+    footerContact: 'Contacto',
+    footerRights: 'Todos los derechos reservados',
+    footerLocation: 'Barcelona, España',
+    heroCaptionLeft: 'IMAGEN SELECCIONADA',
+    heroCaptionRight: 'SISTEMAS VISUALES PARA LA WEB',
+    workNote: 'Trabajo seleccionado / 2024—26',
+    adminButton: 'Panel',
+    menuLabel: 'Menú',
+    serviceReadMore: 'Ver detalles',
   },
-} as const
+  ca: {
+    navWork: 'Projectes',
+    navServices: 'Serveis',
+    navAbout: 'Sobre mi',
+    navQuote: 'Pressupost',
+    available: 'Disponible per a projectes seleccionats',
+    heroTitle1: 'Disseny web',
+    heroTitle2: 'que converteix.',
+    heroIntro: 'Construeixo experiències digitals ràpides, cuidades i orientades a resultats per a negocis que volen créixer.',
+    heroCta: 'Veure projectes',
+    heroWhatsapp: 'Escriure per WhatsApp',
+    aboutKicker: '01 / Sobre mi',
+    aboutTitle: 'Un soci tècnic\nper a idees valentes.',
+    aboutCopy: 'Sóc dissenyador i desenvolupador web. M\'obsessiona la velocitat, el detall visual i els resultats mesurables.',
+    stack: 'Treballant actualment amb',
+    projectKicker: '02 / Projectes',
+    projectTitle: 'Senyals recents',
+    servicesKicker: '03 / Serveis',
+    servicesTitle: 'Què ofereixo',
+    footerTagline: 'Disseny i desenvolupament web professional per a negocis que volen créixer.',
+    footerNav: 'Navegació',
+    footerContact: 'Contacte',
+    footerRights: 'Tots els drets reservats',
+    footerLocation: 'Barcelona, Espanya',
+    heroCaptionLeft: 'IMATGE SELECCIONADA',
+    heroCaptionRight: 'SISTEMES VISUALS PER A LA WEB',
+    workNote: 'Treball seleccionat / 2024—26',
+    adminButton: 'Panell',
+    menuLabel: 'Menú',
+    serviceReadMore: 'Veure detalls',
+  },
+  en: {
+    navWork: 'Work',
+    navServices: 'Services',
+    navAbout: 'About',
+    navQuote: 'Quote',
+    available: 'Available for selected projects',
+    heroTitle1: 'Web design',
+    heroTitle2: 'that converts.',
+    heroIntro: 'I build fast, crafted, results-driven digital experiences for businesses that want to grow.',
+    heroCta: 'View work',
+    heroWhatsapp: 'Message on WhatsApp',
+    aboutKicker: '01 / About',
+    aboutTitle: 'A technical partner\nfor bold ideas.',
+    aboutCopy: 'I\'m a designer and web developer. I\'m obsessed with speed, visual detail and measurable results.',
+    stack: 'Currently working with',
+    projectKicker: '02 / Selected work',
+    projectTitle: 'Recent signals',
+    servicesKicker: '03 / Services',
+    servicesTitle: 'What I offer',
+    footerTagline: 'Professional web design and development for growing businesses.',
+    footerNav: 'Navigation',
+    footerContact: 'Contact',
+    footerRights: 'All rights reserved',
+    footerLocation: 'Barcelona, Spain',
+    heroCaptionLeft: 'SELECTED IMAGE',
+    heroCaptionRight: 'VISUAL SYSTEMS FOR THE WEB',
+    workNote: 'Selected work / 2024—26',
+    adminButton: 'Panel',
+    menuLabel: 'Menu',
+    serviceReadMore: 'View details',
+  },
+}
 
-type Lang = keyof typeof copy
+const langLabels: Record<Lang, { code: string; full: string }> = {
+  es: { code: 'ES', full: 'Español' },
+  ca: { code: 'CA', full: 'Català' },
+  en: { code: 'EN', full: 'English' },
+}
 
-const projects = [
-  { number: '01', title: { en: 'QR Menu', ca: 'Menú QR', es: 'Menú QR' }, type: { en: 'Digital menu for restaurants', ca: 'Menú digital per a restaurants', es: 'Carta digital para restaurantes' }, image: '/dev-workspace-03.png', accent: '#39ff9a', icon: Utensils, tags: ['QR', 'Products', 'Mobile'] },
-  { number: '02', title: { en: 'Business Catalogue', ca: 'Catàleg d’empresa', es: 'Catálogo para empresas' }, type: { en: 'Products and services catalogue', ca: 'Catàleg de productes i serveis', es: 'Catálogo de productos y servicios' }, image: '/dev-workspace-04.png', accent: '#e5b96d', icon: ShoppingBag, tags: ['CMS', 'Catalogue', 'Responsive'] },
-  { number: '03', title: { en: 'Booking Website', ca: 'Web de reserves', es: 'Web de reservas' }, type: { en: 'Appointments and online reservations', ca: 'Cites i reserves en línia', es: 'Citas y reservas online' }, image: '/dev-workspace-05.png', accent: '#39ff9a', icon: CalendarDays, tags: ['Bookings', 'Forms', 'Launch'] },
-  { number: '04', title: { en: 'Online Store', ca: 'Botiga en línia', es: 'Tienda online' }, type: { en: 'Ecommerce experience for growing brands', ca: 'Experiència ecommerce per a marques', es: 'Experiencia ecommerce para marcas' }, image: '/dev-workspace-02.png', accent: '#39ff9a', icon: ShoppingBag, tags: ['Commerce', 'Payments', 'UX'] },
-  { number: '05', title: { en: 'Professional Portfolio', ca: 'Portfoli professional', es: 'Portfolio profesional' }, type: { en: 'Personal brand and creative showcase', ca: 'Marca personal i aparador creatiu', es: 'Marca personal y escaparate creativo' }, image: '/dev-workspace-01.png', accent: '#e5b96d', icon: BriefcaseBusiness, tags: ['Brand', 'Motion', 'Case studies'] },
-  { number: '06', title: { en: 'Landing Page', ca: 'Landing page', es: 'Landing page' }, type: { en: 'Focused page for campaigns and launches', ca: 'Pàgina per a campanyes i llançaments', es: 'Página para campañas y lanzamientos' }, image: '/dev-workspace-06.png', accent: '#39ff9a', icon: Smartphone, tags: ['Campaigns', 'Conversion', 'Speed'] },
-  { number: '07', title: { en: 'Restaurant Website', ca: 'Web de restaurant', es: 'Web para restaurante' }, type: { en: 'Menu, story, location and reservations', ca: 'Menú, història, ubicació i reserves', es: 'Carta, historia, ubicación y reservas' }, image: '/hero-dev-01.png', accent: '#39ff9a', icon: Utensils, tags: ['Hospitality', 'QR', 'Bookings'] },
-  { number: '08', title: { en: 'News & Magazine', ca: 'Notícies i revista', es: 'Noticias y revista' }, type: { en: 'Editorial content platform', ca: 'Plataforma de contingut editorial', es: 'Plataforma de contenido editorial' }, image: '/hero-dev-02.png', accent: '#e5b96d', icon: Newspaper, tags: ['Editorial', 'Content', 'SEO'] },
+const BRAND = 'QuantumMenu'
+const WHATSAPP_URL = 'https://wa.me/34624497851'
+const EMAIL = 'yoanybritocuba@gmail.com'
+const PHONE = '+34682139325'
+const PHONE_DISPLAY = '+34 682 139 325'
+
+const projectIcons: Record<string, any> = {
+  '01': Utensils,
+  '02': ShoppingBag,
+  '03': CalendarDays,
+  '04': ShoppingBag,
+  '05': BriefcaseBusiness,
+  '06': Smartphone,
+  '07': Utensils,
+  '08': Newspaper,
+}
+
+const projectSymbols: Record<string, { es: string; ca: string; en: string }> = {
+  '01': { es: 'CARTA', ca: 'CARTA', en: 'MENU' },
+  '02': { es: 'CATÁLOGO', ca: 'CATÀLEG', en: 'CATALOGUE' },
+  '03': { es: 'RESERVAS', ca: 'RESERVES', en: 'BOOKING' },
+  '04': { es: 'TIENDA', ca: 'BOTIGA', en: 'SHOP' },
+  '05': { es: 'PORTFOLIO', ca: 'PORTFOLI', en: 'PROFILE' },
+  '06': { es: 'LANDING', ca: 'LANDING', en: 'LANDING' },
+  '07': { es: 'RESTAURANTE', ca: 'RESTAURANT', en: 'RESTAURANT' },
+  '08': { es: 'REVISTA', ca: 'REVISTA', en: 'EDITORIAL' },
+}
+
+// ===== SERVICIOS con información completa =====
+const services: (ServiceData & { iconComp: any })[] = [
+  {
+    index: '01',
+    icon: 'utensils',
+    iconComp: Utensils,
+    accent: '#39ff9a',
+    image: '/hero-dev-01.png',
+    price: '300€',
+    title: {
+      es: 'Menús digitales QR',
+      ca: 'Menús digitals QR',
+      en: 'QR digital menus',
+    },
+    short: {
+      es: 'Carta digital accesible desde el móvil con un solo escaneo.',
+      ca: 'Carta digital accessible des del mòbil amb un sol escaneig.',
+      en: 'Digital menu accessible from a phone with a single scan.',
+    },
+    long: {
+      es: 'Una carta digital que tus clientes ven escaneando un código QR desde la mesa, sin apps y sin esperas. Puedes actualizar precios, platos o alérgenos en segundos desde tu móvil, sin depender de nadie. Ideal para restaurantes, bares, cafeterías y cualquier negocio con carta.',
+      ca: 'Una carta digital que els teus clients veuen escanejant un codi QR des de la taula, sense apps i sense esperes. Pots actualitzar preus, plats o al·lèrgens en segons des del teu mòbil, sense dependre de ningú. Ideal per a restaurants, bars, cafeteries i qualsevol negoci amb carta.',
+      en: 'A digital menu your customers see by scanning a QR code at the table — no app, no waiting. Update prices, dishes or allergens in seconds from your phone, without depending on anyone. Ideal for restaurants, bars, cafés and any business with a menu.',
+    },
+    includes: {
+      es: ['Diseño personalizado de la carta', 'Códigos QR físicos para las mesas', 'Editable por ti en segundos', 'Multilenguaje (ES / CA / EN)', 'Alérgenos y categorías', 'Hosting y soporte incluido'],
+      ca: ['Disseny personalitzat de la carta', 'Codis QR físics per a les taules', 'Editable per tu en segons', 'Multillenguatge (ES / CA / EN)', 'Al·lèrgens i categories', 'Hosting i suport inclòs'],
+      en: ['Custom menu design', 'Physical QR codes for tables', 'Editable by you in seconds', 'Multilanguage (ES / CA / EN)', 'Allergens and categories', 'Hosting and support included'],
+    },
+    delivery: { es: '5-7 días', ca: '5-7 dies', en: '5-7 days' },
+  },
+  {
+    index: '02',
+    icon: 'shopping-bag',
+    iconComp: ShoppingBag,
+    accent: '#e8bd72',
+    image: '/dev-workspace-04.png',
+    price: '450€',
+    title: {
+      es: 'Catálogos y tiendas',
+      ca: 'Catàlegs i botigues',
+      en: 'Catalogues & stores',
+    },
+    short: {
+      es: 'Muestra tus productos con un catálogo online o una tienda completa.',
+      ca: 'Mostra els teus productes amb un catàleg online o una botiga completa.',
+      en: 'Showcase your products with an online catalogue or full shop.',
+    },
+    long: {
+      es: 'Desde un catálogo visual con tus productos hasta una tienda online completa con carrito y pagos. Perfecto para tiendas locales, artesanos, distribuidores o cualquier negocio que quiera vender o mostrar productos por internet. Podrás gestionar productos, precios y fotos tú mismo.',
+      ca: 'Des d\'un catàleg visual amb els teus productes fins a una botiga online completa amb carret i pagaments. Perfecte per a botigues locals, artesans, distribuïdors o qualsevol negoci que vulgui vendre o mostrar productes per internet. Podràs gestionar productes, preus i fotos tu mateix.',
+      en: 'From a visual catalogue with your products to a complete online shop with cart and payments. Perfect for local stores, artisans, distributors or any business that wants to sell or showcase products online. Manage products, prices and photos yourself.',
+    },
+    includes: {
+      es: ['Catálogo visual o tienda completa', 'Fichas de producto editables', 'Carrito y pagos online', 'Gestión desde el panel admin', 'SEO básico incluido', 'Formación de uso'],
+      ca: ['Catàleg visual o botiga completa', 'Fitxes de producte editables', 'Carret i pagaments online', 'Gestió des del panell admin', 'SEO bàsic inclòs', 'Formació d\'ús'],
+      en: ['Visual catalogue or full shop', 'Editable product pages', 'Cart and online payments', 'Admin panel management', 'Basic SEO included', 'Usage training'],
+    },
+    delivery: { es: '7-10 días', ca: '7-10 dies', en: '7-10 days' },
+  },
+  {
+    index: '03',
+    icon: 'calendar',
+    iconComp: CalendarDays,
+    accent: '#7ee0ff',
+    image: '/hero-dev-03.png',
+    price: '350€',
+    title: {
+      es: 'Reservas y citas',
+      ca: 'Reserves i cites',
+      en: 'Bookings & appointments',
+    },
+    short: {
+      es: 'Sistema de reservas online para que tus clientes se agenden solos.',
+      ca: 'Sistema de reserves online perquè els teus clients s\'agendin sols.',
+      en: 'Online booking system so your clients schedule themselves.',
+    },
+    long: {
+      es: 'Tus clientes reservan o piden cita desde tu web sin llamarte. Tú decides horarios, servicios y duración. Recibes avisos automáticos por email o WhatsApp. Ideal para peluquerías, clínicas, entrenadores, restaurantes, talleres y cualquier negocio con cita previa.',
+      ca: 'Els teus clients reserven o demanen cita des de la teva web sense trucar-te. Tu decideixes horaris, serveis i durada. Reps avisos automàtics per correu o WhatsApp. Ideal per a perruqueries, clíniques, entrenadors, restaurants, tallers i qualsevol negoci amb cita prèvia.',
+      en: 'Your clients book or schedule appointments from your site without calling. You set schedules, services and duration. Get automatic notifications by email or WhatsApp. Ideal for hair salons, clinics, trainers, restaurants, workshops and any business with bookings.',
+    },
+    includes: {
+      es: ['Calendario online personalizado', 'Configuración de horarios y servicios', 'Avisos automáticos por email', 'Recordatorios por WhatsApp', 'Panel de gestión de citas', 'Cancelaciones y reprogramaciones'],
+      ca: ['Calendari online personalitzat', 'Configuració d\'horaris i serveis', 'Avisos automàtics per correu', 'Recordatoris per WhatsApp', 'Panell de gestió de cites', 'Cancel·lacions i reprogramacions'],
+      en: ['Custom online calendar', 'Schedule and services setup', 'Automatic email notifications', 'WhatsApp reminders', 'Appointments management panel', 'Cancellations and rescheduling'],
+    },
+    delivery: { es: '6-8 días', ca: '6-8 dies', en: '6-8 days' },
+  },
+  {
+    index: '04',
+    icon: 'briefcase',
+    iconComp: BriefcaseBusiness,
+    accent: '#ff8ad4',
+    image: '/dev-workspace-05.png',
+    price: '550€',
+    title: {
+      es: 'Web corporativa',
+      ca: 'Web corporativa',
+      en: 'Business website',
+    },
+    short: {
+      es: 'Presencia profesional completa para tu empresa o marca personal.',
+      ca: 'Presència professional completa per a la teva empresa o marca personal.',
+      en: 'Complete professional presence for your company or personal brand.',
+    },
+    long: {
+      es: 'Una web completa que presenta quién eres, qué haces y cómo contactarte. Diseño moderno, rápido y adaptado a móvil. Incluye secciones personalizadas, formulario de contacto, blog, integración con redes y SEO básico. Perfecto para empresas, profesionales, freelancers y autónomos que quieren dar imagen de marca.',
+      ca: 'Una web completa que presenta qui ets, què fas i com contactar-te. Disseny modern, ràpid i adaptat a mòbil. Inclou seccions personalitzades, formulari de contacte, blog, integració amb xarxes i SEO bàsic. Perfecte per a empreses, professionals, freelancers i autònoms que volen donar imatge de marca.',
+      en: 'A complete website presenting who you are, what you do and how to reach you. Modern, fast and mobile-ready design. Includes custom sections, contact form, blog, social integration and basic SEO. Perfect for companies, professionals, freelancers and self-employed people building a brand.',
+    },
+    includes: {
+      es: ['Diseño personalizado a medida', 'Todas las secciones que necesites', 'Formulario de contacto', 'Blog o noticias', 'SEO básico en Google', 'Adaptado a móvil', 'Hosting y dominio (opcional)'],
+      ca: ['Disseny personalitzat a mida', 'Totes les seccions que necessitis', 'Formulari de contacte', 'Blog o notícies', 'SEO bàsic a Google', 'Adaptat a mòbil', 'Hosting i domini (opcional)'],
+      en: ['Custom tailored design', 'All sections you need', 'Contact form', 'Blog or news', 'Basic SEO on Google', 'Mobile-adapted', 'Hosting and domain (optional)'],
+    },
+    delivery: { es: '10-15 días', ca: '10-15 dies', en: '10-15 days' },
+  },
 ]
 
-const services = [
-  { icon: Utensils, title: { en: 'QR menus for restaurants', ca: 'Menús QR per a restaurants', es: 'Cartas QR para restaurantes' }, text: { en: 'Digital menus that are easy to update, scan and use from any phone.', ca: 'Menús digitals fàcils d’actualitzar, escanejar i consultar des de qualsevol mòbil.', es: 'Cartas digitales fáciles de actualizar, escanear y consultar desde cualquier móvil.' } },
-  { icon: ShoppingBag, title: { en: 'Business catalogues', ca: 'Catàlegs d’empresa', es: 'Catálogos para empresas' }, text: { en: 'Clear product and service showcases that help customers decide faster.', ca: 'Aparadors clars de productes i serveis perquè els clients decideixin més ràpid.', es: 'Muestras claras de productos y servicios para que tus clientes decidan más rápido.' } },
-  { icon: CalendarDays, title: { en: 'Booking websites', ca: 'Webs de reserves', es: 'Webs de reservas' }, text: { en: 'Simple booking flows for appointments, restaurants, studios and local businesses.', ca: 'Fluxos de reserva simples per a cites, restaurants, estudis i negocis locals.', es: 'Flujos de reserva simples para citas, restaurantes, estudios y negocios locales.' } },
-  { icon: Code2, title: { en: 'Custom web development', ca: 'Desenvolupament web a mida', es: 'Desarrollo web a medida' }, text: { en: 'Fast, accessible websites built around the way your business actually works.', ca: 'Webs ràpides i accessibles construïdes al voltant del teu negoci real.', es: 'Webs rápidas y accesibles construidas alrededor de cómo funciona tu negocio.' } },
-]
+function mapProject(p: SupabaseProject, lang: Lang) {
+  const number = p.number || '01'
+  const Icon = projectIcons[number] || Utensils
+  const symbol = projectSymbols[number] || { es: 'PROYECTO', ca: 'PROJECTE', en: 'PROJECT' }
+  const title = lang === 'es' ? p.title_es : lang === 'ca' ? p.title_ca : p.title_en
+  const type = lang === 'es' ? p.type_es : lang === 'ca' ? p.type_ca : p.type_en
+  const description = lang === 'es' ? p.description_es : lang === 'ca' ? p.description_ca : p.description_en
+  const tags = (lang === 'es' ? p.tags_es : lang === 'ca' ? p.tags_ca : p.tags_en) || []
+  const includes = (lang === 'es' ? p.includes_es : lang === 'ca' ? p.includes_ca : p.includes_en) || []
+  const excludes = (lang === 'es' ? p.excludes_es : lang === 'ca' ? p.excludes_ca : p.excludes_en) || []
+  const deliveryTime = lang === 'es' ? p.delivery_time_es : lang === 'ca' ? p.delivery_time_ca : p.delivery_time_en
 
-const tech = ['TypeScript', 'React / Next.js', 'Node.js', 'Postgres', 'Figma', 'AI interfaces']
+  return {
+    id: p.id,
+    number,
+    title: title || '',
+    type: type || '',
+    description: description || '',
+    image: p.image || '/placeholder.svg',
+    accent: p.accent || '#16b77f',
+    icon: Icon,
+    symbol: symbol[lang],
+    tags,
+    includes,
+    excludes,
+    price: p.price || 0,
+    deliveryTime: deliveryTime || '',
+  }
+}
 
-const WHATSAPP_URL = 'https://wa.me/34624497851?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20una%20web%20para%20mi%20negocio.'
-
-export default function Page() {
+export default function HomePage() {
   const [lang, setLang] = useState<Lang>('es')
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [sent, setSent] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
-  const [selectedProject, setSelectedProject] = useState<(typeof projects)[number] | null>(null)
-  const t = useMemo(() => copy[lang], [lang])
+  const [projects, setProjects] = useState<SupabaseProject[]>([])
+  const [projectsLoaded, setProjectsLoaded] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<any | null>(null)
+  const [selectedService, setSelectedService] = useState<ServiceData | null>(null)
+  const [langOpen, setLangOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const langRef = useRef<HTMLDivElement>(null)
+  const t = copy[lang]
 
   useEffect(() => {
-    const timer = window.setInterval(() => setActiveSlide((slide) => (slide + 1) % 6), 4000)
-    return () => window.clearInterval(timer)
+    const load = async () => {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('published', true)
+        .order('number', { ascending: true })
+      if (!error && data) setProjects(data as SupabaseProject[])
+      setProjectsLoaded(true)
+    }
+    load()
   }, [])
 
-  const navLinks = ['#about', '#work', '#services', '#contact']
+  const mappedProjects = useMemo(() => projects.map((p) => mapProject(p, lang)), [projects, lang])
+
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
+
+  const changeLang = (l: Lang) => { setLang(l); setLangOpen(false) }
+  const closeMenu = () => setMenuOpen(false)
+
+  const goToWork = () => {
+    const el = document.getElementById('work')
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <main className="site-shell">
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
       <header className="site-header">
-        <a href="#top" className="brand" aria-label="QuantumMenu home"><img src="/logo.png" alt="QuantumMenu logo" /><span>QuantumMenu</span></a>
-        <nav className={menuOpen ? 'main-nav open' : 'main-nav'} aria-label="Primary navigation">
-          {t.nav.map((item, index) => <a key={item} href={navLinks[index]} onClick={() => setMenuOpen(false)}>{item}</a>)}
+        <a href="/" className="brand">
+          <img src="/logo.png" alt={BRAND} className="brand-logo" />
+          <span className="brand-name">{BRAND}</span>
+        </a>
+        <nav className="main-nav">
+          <a href="#work">{t.navWork}</a>
+          <a href="#services">{t.navServices}</a>
+          <a href="#about">{t.navAbout}</a>
+          <a href="#presupuesto">{t.navQuote}</a>
         </nav>
         <div className="header-actions">
-          <label className="language-select" aria-label="Language selector"><span className="language-globe">◎</span><select value={lang} onChange={(event) => setLang(event.target.value as Lang)}><option value="en">English</option><option value="ca">Català</option><option value="es">Español</option></select><span className="language-chevron">⌄</span></label>
-          <a className="header-admin" href="/admin"><Settings2 size={14} />{t.adminButton}</a>
-          <a className="header-contact" href="#contact">{t.cta}<ArrowUpRight size={14} /></a>
-          <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close menu' : 'Open menu'}>{menuOpen ? <X /> : <Menu />}</button>
+          <div className="lang-dropdown" ref={langRef}>
+            <button className="lang-trigger" onClick={() => setLangOpen(!langOpen)} aria-label="Cambiar idioma">
+              <Globe size={16} />
+              <span>{langLabels[lang].code}</span>
+              <ChevronDown size={14} className={`lang-chevron ${langOpen ? 'open' : ''}`} />
+            </button>
+            {langOpen && (
+              <div className="lang-menu" role="menu">
+                {(Object.keys(langLabels) as Lang[]).map((code) => (
+                  <button key={code} className={`lang-option ${lang === code ? 'active' : ''}`} onClick={() => changeLang(code)} role="menuitem">
+                    <span className="lang-option-code">{langLabels[code].code}</span>
+                    <span className="lang-option-full">{langLabels[code].full}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <a href="/admin" className="header-admin">
+            <Lock size={14} />
+            <span>{t.adminButton}</span>
+          </a>
+          <button className={`menu-toggle ${menuOpen ? 'is-open' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label={t.menuLabel} aria-expanded={menuOpen}>
+            <span className="menu-toggle-bars"><span /><span /><span /></span>
+          </button>
         </div>
       </header>
 
-      <section id="top" className="hero section-wrap">
+      <div className={`mobile-menu-fullscreen ${menuOpen ? 'is-open' : ''}`} aria-hidden={!menuOpen}>
+        <div className="mobile-menu-inner">
+          <nav className="mobile-menu-nav">
+            <a href="#work" onClick={closeMenu} style={{ animationDelay: '.1s' }}>{t.navWork}</a>
+            <a href="#services" onClick={closeMenu} style={{ animationDelay: '.18s' }}>{t.navServices}</a>
+            <a href="#about" onClick={closeMenu} style={{ animationDelay: '.26s' }}>{t.navAbout}</a>
+            <a href="#presupuesto" onClick={closeMenu} style={{ animationDelay: '.34s' }}>{t.navQuote}</a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="mobile-menu-whatsapp" onClick={closeMenu} style={{ animationDelay: '.42s' }}>
+              <MessageCircle size={18} /> WhatsApp
+            </a>
+            <a href="/admin" className="mobile-menu-admin" onClick={closeMenu} style={{ animationDelay: '.5s' }}>
+              <Lock size={16} /> {t.adminButton}
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <section className="hero">
         <div className="hero-visual" aria-label="Featured work carousel">
-          {['/hero-dev-01.png', '/hero-dev-02.png', '/hero-dev-03.png', '/dev-workspace-01.png', '/dev-workspace-02.png', '/dev-workspace-03.png'].map((image, index) => <div key={image} className={`hero-slide ${activeSlide === index ? 'active' : ''}`} style={{ backgroundImage: `url(${image})` }} />)}
+          {['/hero-dev-01.png', '/hero-dev-02.png', '/hero-dev-03.png', '/dev-workspace-01.png', '/dev-workspace-02.png', '/dev-workspace-03.png'].map((image, index) => (
+            <div key={image} className={`hero-slide ${activeSlide === index ? 'active' : ''}`} style={{ backgroundImage: `url(${image})` }} onAnimationEnd={() => setActiveSlide((activeSlide + 1) % 6)} />
+          ))}
           <div className="hero-visual-overlay" />
-          <div className="hero-caption">SELECTED IMAGE / 0{activeSlide + 1}<br /><strong>VISUAL SYSTEMS FOR THE WEB</strong></div>
+          <div className="hero-caption">{t.heroCaptionLeft} / 0{activeSlide + 1}<br /><strong>{t.heroCaptionRight}</strong></div>
         </div>
-        <div className="hero-copy reveal">
-          <div className="availability"><span className="status-dot" />{t.available}</div>
-          <p className="eyebrow">{t.eyebrow}</p>
-          <h1>{t.title.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h1>
-          <p className="hero-intro">{t.intro.split(' ').map((word, index) => <span className="hero-intro-word" key={`${word}-${index}`}>{word}{index < t.intro.split(' ').length - 1 ? ' ' : ''}</span>)}</p>
-          <div className="hero-actions"><a href="#contact" className="button button-primary">{t.cta}<MoveRight size={17} /></a><a href="#work" className="text-link">{t.work}<ArrowUpRight size={15} /></a></div>
+        <div className="section-wrap hero-copy">
+          <span className="availability"><span className="status-dot" />{t.available}</span>
+          <h1><span>{t.heroTitle1}</span><br /><span>{t.heroTitle2}</span></h1>
+          <p className="hero-intro">{t.heroIntro}</p>
+          <div className="hero-actions">
+            <a href="#work" className="button button-primary">{t.heroCta} <ExternalLink size={14} /></a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-link"><MessageCircle size={14} /> {t.heroWhatsapp}</a>
+          </div>
         </div>
-        <div className="hero-meta"><span>© 2024—2026</span><span className="scroll-note"><span className="scroll-line" />scroll to explore</span><span>BCN / ES</span></div>
       </section>
 
       <section id="about" className="section-wrap about-section">
-        <div className="section-label"><span>{t.aboutKicker}</span><span>●</span></div>
-        <div className="about-layout"><div><h2>{t.aboutTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2></div><div className="about-detail"><p className="large-copy">{t.aboutText}</p><div className="stack-block"><span className="mini-label">{t.stack}</span><div className="stack-list">{['Next.js', 'TypeScript', 'Supabase', 'AI'].map((item) => <span key={item}><Check size={13} />{item}</span>)}</div></div></div></div>
+        <div className="section-label"><span>{t.aboutKicker}</span><span>01 / 01</span></div>
+        <div className="about-layout">
+          <h2>{t.aboutTitle.split('\n').map((line, i) => (<span key={i}>{line}{i === 0 && <br />}</span>))}</h2>
+          <div>
+            <p className="large-copy">{t.aboutCopy}</p>
+            <div className="stack-block">
+              <span className="mini-label">{t.stack}</span>
+              <div className="stack-list"><span>Next.js</span><span>React</span><span>TypeScript</span><span>Tailwind</span><span>Supabase</span><span>Vercel</span></div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <section id="work" className="section-wrap work-section"><div className="section-label"><span>{t.projectKicker}</span><span>03 / 03</span></div><div className="section-heading"><h2>{t.projectTitle}</h2><span className="section-note">Selected work / 2024—26</span></div><div className="project-grid">{projects.map((project) => { const ProjectIcon = project.icon; return <article className="project-card" key={project.number} onClick={() => setSelectedProject(project)} style={{ cursor: 'pointer' }}><div className="project-image" style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.72)), url(${project.image})` }}><div className="image-grid" /><div className="project-number">{project.number}</div><div className="project-type-badge"><ProjectIcon size={18} /><span>{project.title[lang]}</span></div><div className="project-symbol" style={{ color: project.accent, borderColor: project.accent }}><ProjectIcon size={42} strokeWidth={1.2} /><span>{project.title.en === 'QR Menu' ? 'QR' : project.title.en === 'Business Catalogue' ? 'CATALOGUE' : project.title.en === 'Booking Website' ? 'BOOKING' : project.title.en === 'Online Store' ? 'SHOP' : project.title.en === 'Professional Portfolio' ? 'PROFILE' : project.title.en === 'Landing Page' ? 'LANDING' : project.title.en === 'Restaurant Website' ? 'MENU' : 'EDITORIAL'}</span></div>{project.title.en === 'QR Menu' && <div className="qr-badge"><QrCode size={46} /><span>{lang === 'es' ? 'ESCANEA / PIDE' : lang === 'ca' ? 'ESCANEJA / DEMANA' : 'SCAN / ORDER'}</span></div>}<div className="project-orbit" style={{ borderColor: project.accent }} /><ExternalLink className="project-arrow" size={20} /></div><div className="project-info"><div><h3>{project.title[lang]}</h3><p>{project.type[lang]}</p></div><div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></article> })}</div></section>
+      <section id="work" className="section-wrap work-section">
+        <div className="section-label"><span>{t.projectKicker}</span><span>03 / 03</span></div>
+        <div className="section-heading"><h2>{t.projectTitle}</h2><span className="section-note">{t.workNote}</span></div>
+        <div className="project-grid">
+          {!projectsLoaded && <p style={{ color: 'var(--green)', opacity: .6 }}>{lang === 'es' ? 'Cargando proyectos...' : lang === 'ca' ? 'Carregant projectes...' : 'Loading projects...'}</p>}
+          {projectsLoaded && mappedProjects.length === 0 && <p style={{ color: 'var(--green)', opacity: .6 }}>{lang === 'es' ? 'No hay proyectos publicados.' : lang === 'ca' ? 'No hi ha projectes publicats.' : 'No published projects.'}</p>}
+          {mappedProjects.map((project) => {
+            const ProjectIcon = project.icon
+            return (
+              <article className="project-card" key={project.id} onClick={() => setSelectedProject(project)} style={{ cursor: 'pointer' }}>
+                <div className="project-image" style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.72)), url(${project.image})` }}>
+                  <div className="image-grid" />
+                  <div className="project-number">{project.number}</div>
+                  <div className="project-icon-badge"><ProjectIcon size={28} strokeWidth={1.4} /></div>
+                  <div className="project-symbol" style={{ color: project.accent, borderColor: project.accent }}>
+                    <ProjectIcon size={52} strokeWidth={1.2} />
+                    <span>{project.symbol}</span>
+                  </div>
+                  <div className="project-orbit" style={{ borderColor: project.accent }} />
+                  <ExternalLink className="project-arrow" size={20} />
+                </div>
+                <div className="project-info">
+                  <div><h3>{project.title}</h3><p>{project.type}</p></div>
+                  <div className="tag-list">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
 
-      <section id="services" className="section-wrap services-section"><div className="section-label"><span>{t.servicesKicker}</span><span>What I do</span></div><div className="services-layout"><h2>{t.servicesTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><div className="service-list">{services.map(({ icon: Icon, title, text }, i) => <div className="service-row" key={title.en}><span className="service-index">0{i + 1}</span><Icon size={21} /><div><h3>{title[lang]}</h3><p>{text[lang]}</p></div><ArrowUpRight className="service-arrow" size={18} /></div>)}</div></div></section>
-
-      <section className="section-wrap skills-section"><div className="section-label"><span>{t.skillsKicker}</span><span>Tools / process</span></div><div className="skills-layout"><h2>{t.skillsTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><div className="tech-cloud">{tech.map((item, i) => <span key={item} className={`tech-chip chip-${i}`}>{item}</span>)}</div></div></section>
+      <section id="services" className="section-wrap services-section">
+        <div className="section-label"><span>{t.servicesKicker}</span><span>03 / 03</span></div>
+        <div className="section-heading"><h2>{t.servicesTitle}</h2></div>
+        <div className="service-list">
+          {services.map((service) => {
+            const ServiceIcon = service.iconComp
+            return (
+              <button
+                type="button"
+                className="service-row"
+                key={service.index}
+                onClick={() => setSelectedService(service)}
+              >
+                <span className="service-index">{service.index}</span>
+                <ServiceIcon size={26} strokeWidth={1.2} />
+                <div>
+                  <h3>{service.title[lang]}</h3>
+                  <p>{service.short[lang]}</p>
+                </div>
+                <span className="service-arrow">
+                  <ExternalLink size={16} />
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
 
       <QuoteBuilder lang={lang} />
 
-      <section id="contact" className="section-wrap contact-section"><div className="section-label"><span>{t.contactKicker}</span><span>Let&apos;s talk</span></div><div className="contact-layout"><div><h2>{t.contactTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><p className="contact-copy">{t.contactText}</p><a className="email-link" href="mailto:yoanybritocuba@gmail.com">yoanybritocuba@gmail.com <ArrowUpRight size={16} /></a></div><form className="contact-form" onSubmit={(event) => { event.preventDefault(); setSent(true) }}>{sent ? <div className="form-success"><Check size={28} /><h3>Message received.</h3><p>Thanks for reaching out. I&apos;ll be in touch soon.</p></div> : <><label>Name<input required name="name" placeholder="Your name" /></label><label>Email<input required type="email" name="email" placeholder="you@company.com" /></label><label>What are we building?<textarea required name="message" rows={4} placeholder="A little about the project..." /></label><button className="button button-primary" type="submit">{t.send}<MoveRight size={17} /></button></>}</form></div></section>
-
-      <section className="section-wrap admin-cta-section"><div className="section-label"><span>{t.adminKicker}</span><span>Protected workspace</span></div><div className="admin-cta"><div><h2>{t.adminTitle.split('\n').map((line) => <span key={line}>{line}<br /></span>)}</h2><p>{t.adminText}</p></div></div></section>
-
-      <footer className="site-footer section-wrap">
-        <div className="footer-top">
-          <a href="#top" className="brand">
-            <img src="/logo.png" alt="QuantumMenu logo" />
-            <span>QuantumMenu</span>
-          </a>
-          <p>{t.footer}</p>
-          <div className="footer-contact">
-            <a href="mailto:yoanybritocuba@gmail.com">yoanybritocuba@gmail.com</a>
-            <a href="tel:+34624497851">+34 624 497 851</a>
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="footer-whatsapp-link"
-            >
-              <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
-                <path d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.888 2.722.888.817 0 2.26-.79 2.605-1.53.143-.31.258-.645.258-.99 0-.258-.144-.402-.402-.53-.486-.244-1.36-.703-1.85-.96-.147-.087-.314-.13-.474-.13zM16.005 4C9.376 4 4 9.376 4 16.006c0 2.115.558 4.098 1.52 5.827L4 28l6.343-1.489a11.94 11.94 0 0 0 5.662 1.436c6.63 0 12.005-5.376 12.005-12.006S22.635 4 16.005 4zm0 21.788c-1.73 0-3.428-.516-4.84-1.475l-.36-.227-3.6.845.96-3.502-.236-.376a9.744 9.744 0 0 1-1.475-5.174c0-5.405 4.4-9.805 9.805-9.805s9.805 4.4 9.805 9.805-4.4 9.81-9.805 9.81z" />
-              </svg>
-              WhatsApp
+      <footer className="site-footer">
+        <div className="footer-content">
+          <div className="footer-col footer-col-brand">
+            <a href="/" className="footer-brand">
+              <img src="/logo.png" alt={BRAND} className="footer-logo" />
+              <span className="footer-brand-name">{BRAND}</span>
             </a>
+            <p className="footer-tagline">{t.footerTagline}</p>
           </div>
-          <div className="socials">
-            <a href="mailto:yoanybritocuba@gmail.com" aria-label="Email"><Mail size={17} /></a>
-            <a href="tel:+34624497851" aria-label="Phone"><Phone size={17} /></a>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-              <svg viewBox="0 0 32 32" width="17" height="17" fill="currentColor">
-                <path d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.888 2.722.888.817 0 2.26-.79 2.605-1.53.143-.31.258-.645.258-.99 0-.258-.144-.402-.402-.53-.486-.244-1.36-.703-1.85-.96-.147-.087-.314-.13-.474-.13zM16.005 4C9.376 4 4 9.376 4 16.006c0 2.115.558 4.098 1.52 5.827L4 28l6.343-1.489a11.94 11.94 0 0 0 5.662 1.436c6.63 0 12.005-5.376 12.005-12.006S22.635 4 16.005 4zm0 21.788c-1.73 0-3.428-.516-4.84-1.475l-.36-.227-3.6.845.96-3.502-.236-.376a9.744 9.744 0 0 1-1.475-5.174c0-5.405 4.4-9.805 9.805-9.805s9.805 4.4 9.805 9.805-4.4 9.81-9.805 9.81z" />
-              </svg>
-            </a>
+          <div className="footer-col">
+            <h4 className="footer-col-title">{t.footerNav}</h4>
+            <ul className="footer-links">
+              <li><a href="#work">{t.navWork}</a></li>
+              <li><a href="#services">{t.navServices}</a></li>
+              <li><a href="#about">{t.navAbout}</a></li>
+              <li><a href="#presupuesto">{t.navQuote}</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4 className="footer-col-title">{t.footerContact}</h4>
+            <ul className="footer-contact-list">
+              <li><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="footer-contact-item footer-contact-whatsapp"><MessageCircle size={16} /><span>WhatsApp</span></a></li>
+              <li><a href={`mailto:${EMAIL}`} className="footer-contact-item"><Mail size={16} /><span>{EMAIL}</span></a></li>
+              <li><a href={`tel:${PHONE}`} className="footer-contact-item"><Phone size={16} /><span>{PHONE_DISPLAY}</span></a></li>
+            </ul>
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2026 Studio / All systems nominal</span>
-          <span>Barcelona, Spain</span>
-          <a href="/admin">Admin access <ArrowUpRight size={13} /></a>
+          <span>© {new Date().getFullYear()} {BRAND} — {t.footerRights}</span>
+          <span>{t.footerLocation}</span>
         </div>
       </footer>
-      <MascotAssistant lang={lang} />
+
       <ProjectModal project={selectedProject} lang={lang} onClose={() => setSelectedProject(null)} />
+      <ServiceModal
+        service={selectedService}
+        lang={lang}
+        onClose={() => setSelectedService(null)}
+        onGoToWork={() => { setSelectedService(null); setTimeout(goToWork, 200) }}
+      />
+      <MascotAssistant lang={lang} />
     </main>
   )
 }

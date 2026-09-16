@@ -1,0 +1,885 @@
+/* ============================================
+   QUOTE — configurador de presupuestos
+   ============================================ */
+
+.quote-section { padding: 100px 0; }
+
+.quote-header { text-align: center; max-width: 720px; margin: 0 auto 50px; }
+.quote-header h2 {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.05; letter-spacing: -.06em;
+  margin: 0 0 18px; font-weight: 700;
+  color: var(--green); transition: color .25s, text-shadow .25s;
+}
+.quote-header:hover h2 { color: var(--gold-bright); text-shadow: 0 0 18px rgba(232,189,114,.4); }
+.quote-header h2 svg { color: var(--green-bright); filter: drop-shadow(0 0 16px rgba(57,255,154,.5)); }
+.quote-header p { color: var(--green); font-size: 15px; line-height: 1.6; margin: 0; opacity: .85; }
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+.quote-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 40px;
+  align-items: start;
+}
+
+.quote-left-desktop {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  min-width: 0;
+}
+
+/* ============================================
+   METRO VERTICAL
+   ============================================ */
+.quote-metro {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 6px 12px 0;
+  position: relative;
+}
+
+.quote-metro-line {
+  position: absolute;
+  top: 26px;
+  bottom: 26px;
+  left: 21px;
+  width: 2px;
+  background: rgba(22, 183, 127, .18);
+  border-radius: 2px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.quote-metro-line-fill {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  background: linear-gradient(180deg, var(--green-bright), var(--gold-bright));
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(57, 255, 154, .55);
+  transition: height .55s cubic-bezier(.6, .05, .25, 1);
+}
+
+.quote-metro-stop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: 0;
+  padding: 12px 0;
+  min-height: 54px;
+  cursor: pointer;
+  color: var(--green);
+  text-align: left;
+  transition: all .25s ease;
+  z-index: 1;
+}
+.quote-metro-stop:hover .quote-metro-label { color: var(--gold-bright); }
+.quote-metro-stop:hover .quote-metro-dot { border-color: var(--gold); }
+
+.quote-metro-dot {
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: #000;
+  color: var(--green);
+  flex: 0 0 auto;
+  transition: all .3s cubic-bezier(.4,.1,.2,1);
+  position: relative;
+  z-index: 2;
+}
+.quote-metro-stop.is-passed .quote-metro-dot {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+  box-shadow: 0 0 14px rgba(22,183,127,.5);
+}
+.quote-metro-stop.is-completed .quote-metro-dot {
+  background: var(--green);
+  border-color: var(--green-bright);
+  color: #000;
+  box-shadow: 0 0 16px rgba(57,255,154,.6);
+}
+.quote-metro-stop.is-active .quote-metro-dot {
+  width: 40px; height: 40px;
+  background: #000;
+  border-color: var(--gold-bright);
+  border-width: 3px;
+  color: var(--gold-bright);
+  box-shadow: 0 0 0 4px rgba(232,189,114,.15), 0 0 22px rgba(232,189,114,.65);
+  animation: metroPulse 2s ease-in-out infinite;
+}
+@keyframes metroPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(232,189,114,.15), 0 0 22px rgba(232,189,114,.65); }
+  50% { box-shadow: 0 0 0 8px rgba(232,189,114,.08), 0 0 30px rgba(232,189,114,.85); }
+}
+
+.quote-metro-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: .02em;
+  line-height: 1.3;
+  transition: color .25s ease;
+  opacity: .65;
+}
+.quote-metro-stop.is-active .quote-metro-label {
+  color: var(--gold-bright);
+  opacity: 1;
+  font-weight: 800;
+  font-size: 12.5px;
+}
+.quote-metro-stop.is-passed .quote-metro-label,
+.quote-metro-stop.is-completed .quote-metro-label {
+  color: var(--green-bright);
+  opacity: .9;
+}
+
+/* ============================================
+   ÁREA DE SCROLL
+   ============================================ */
+.quote-scroll {
+  height: 680px;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #000;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(22,183,127,.4) transparent;
+}
+.quote-scroll::-webkit-scrollbar { width: 6px; }
+.quote-scroll::-webkit-scrollbar-track { background: transparent; }
+.quote-scroll::-webkit-scrollbar-thumb { background: rgba(22,183,127,.35); border-radius: 6px; }
+.quote-scroll::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+.quote-area {
+  position: relative;
+  min-height: 680px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
+}
+.quote-area:last-child { border-bottom: 0; }
+
+.quote-area-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 30px 26px;
+  gap: 20px;
+  min-height: 0;
+}
+
+.quote-area-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+.quote-area-header::before {
+  content: '';
+  position: absolute;
+  left: -30px; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--block-accent, #16b77f);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--block-accent) 50%, transparent);
+}
+.quote-area-icon {
+  display: grid; place-items: center;
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--block-accent) 12%, #000);
+  border: 1px solid color-mix(in srgb, var(--block-accent) 50%, transparent);
+  color: var(--block-accent);
+  flex: 0 0 auto;
+}
+.quote-area-header > div { flex: 1; min-width: 0; }
+.quote-area-kicker {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--block-accent);
+  margin: 0 0 4px;
+  font-weight: 600;
+  opacity: .8;
+}
+.quote-area-header h3 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  margin: 0 0 6px;
+  color: var(--block-accent);
+  text-transform: uppercase;
+}
+.quote-area-desc {
+  color: var(--green);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  opacity: .7;
+}
+.quote-area-badge {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  min-width: 28px; height: 28px;
+  padding: 0 10px;
+  background: var(--gold);
+  color: #000;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.quote-area-options {
+  flex: 1;
+  display: grid;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 6px;
+  align-content: start;
+}
+.quote-area-options::-webkit-scrollbar { width: 4px; }
+.quote-area-options::-webkit-scrollbar-thumb { background: rgba(22,183,127,.3); border-radius: 4px; }
+
+.quote-empty {
+  color: var(--green);
+  font-size: 11px;
+  opacity: .5;
+  padding: 10px 4px;
+  margin: 0;
+}
+
+.quote-option {
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #000;
+  transition: all .2s ease;
+}
+.quote-option:hover {
+  border-color: var(--gold);
+  background: rgba(217,169,87,.05);
+  transform: translateX(4px);
+}
+.quote-option.is-selected {
+  border-color: var(--green-bright);
+  background: #000;
+  box-shadow: 0 0 20px rgba(57,255,154,.2), inset 0 0 16px rgba(57,255,154,.06);
+}
+.quote-option-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+.quote-option-main input {
+  margin-top: 3px;
+  width: 18px; height: 18px;
+  accent-color: var(--green);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.quote-option-info { flex: 1; min-width: 0; }
+.quote-option-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 3px;
+}
+.quote-option-title strong {
+  font-size: 14px; font-weight: 700;
+  color: var(--green);
+  transition: color .25s, text-shadow .25s;
+  line-height: 1.3;
+}
+.quote-option:hover .quote-option-title strong { color: var(--gold-bright); text-shadow: 0 0 12px rgba(232,189,114,.35); }
+.quote-option.is-selected .quote-option-title strong { color: var(--green-bright); }
+.quote-option-price {
+  font-size: 13px; font-weight: 800;
+  color: var(--green-bright);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.quote-option-desc {
+  color: var(--green);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  opacity: .65;
+}
+
+.quote-option-toggle-features {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 8px; padding: 4px 8px;
+  background: #000;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--green);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: all .2s ease;
+  opacity: .75;
+}
+.quote-option-toggle-features:hover {
+  color: var(--gold-bright);
+  border-color: var(--gold);
+  opacity: 1;
+}
+.quote-option-features {
+  list-style: none;
+  padding: 10px 0 0 26px;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+.quote-option-features li {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px;
+  color: var(--green);
+  opacity: .85;
+  line-height: 1.4;
+}
+.quote-option-features svg { color: var(--green-bright); flex: 0 0 auto; }
+
+.quote-area-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+.quote-nav-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 11px 18px;
+  border: 1px solid var(--line);
+  background: #000;
+  color: var(--green);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .25s ease;
+  font-weight: 700;
+}
+.quote-nav-btn:hover:not(:disabled) { color: var(--gold-bright); border-color: var(--gold); }
+.quote-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.quote-nav-next { border-radius: 999px !important; padding: 11px 22px !important; }
+
+/* ============================================
+   PANEL DERECHO
+   ============================================ */
+.quote-summary {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+}
+.quote-summary-card {
+  border: 1px solid var(--green);
+  background: #000;
+  border-radius: 16px;
+  padding: 22px 20px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.7), 0 0 40px rgba(22,183,127,.15);
+  max-height: calc(100vh - 130px);
+  overflow-y: auto;
+}
+.quote-summary-card::-webkit-scrollbar { width: 4px; }
+.quote-summary-card::-webkit-scrollbar-thumb { background: rgba(22,183,127,.3); border-radius: 4px; }
+
+.quote-kicker {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--green);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: .14em;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+.quote-summary-card h3 {
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin: 0 0 6px;
+  font-weight: 600;
+  opacity: .75;
+}
+.quote-total {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -.05em;
+  color: var(--green-bright);
+  margin: 0;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 32px rgba(57,255,154,.5);
+  animation: totalFlip .5s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes totalFlip {
+  from { opacity: 0; transform: translateY(-8px) rotateX(-40deg); }
+  to { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+.quote-monthly { color: var(--gold-bright); font-size: 13px; margin: 6px 0 0; font-weight: 600; }
+
+.quote-summary-list {
+  list-style: none;
+  padding: 12px 0 0;
+  margin: 12px 0 0;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.quote-summary-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--green);
+  line-height: 1.35;
+}
+.quote-summary-list li span:first-child { flex: 1; min-width: 0; opacity: .85; }
+.quote-summary-list li span:last-child { color: var(--green-bright); font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.quote-empty-summary {
+  color: var(--green);
+  font-size: 11.5px;
+  opacity: .5;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.quote-not-included {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  margin: 16px 0;
+  display: grid;
+  gap: 5px;
+}
+.quote-not-included p { color: var(--green); font-size: 10.5px; line-height: 1.5; margin: 0; opacity: .7; }
+.quote-not-included strong { color: var(--gold-bright); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
+
+.quote-cta {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 8px;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.quote-cta-secondary {
+  width: 100%;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: #000;
+  color: var(--green);
+  padding: 12px 15px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  border-radius: 999px;
+  transition: all .25s ease;
+  cursor: pointer;
+}
+.quote-cta-secondary:hover { color: var(--gold-bright); border-color: var(--gold); background: #000; }
+
+/* ============================================
+   TABLET
+   ============================================ */
+@media (max-width: 1180px) {
+  .quote-left-desktop { grid-template-columns: 180px minmax(0, 1fr); gap: 18px; }
+  .quote-layout { grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; }
+  .quote-metro-label { font-size: 11px; }
+}
+
+/* ============================================
+   MÓVIL
+   ============================================ */
+@media (max-width: 900px) {
+  .quote-section { padding: 40px 0 60px; }
+
+  .quote-header { margin-bottom: 20px; padding: 0 6px; }
+  .quote-header h2 { font-size: 22px; gap: 8px; margin-bottom: 8px; }
+  .quote-header h2 svg { width: 22px; height: 22px; }
+  .quote-header p { font-size: 12px; line-height: 1.45; }
+
+  /* LAYOUT — igual pero con margen derecho más pequeño */
+  .quote-layout {
+    grid-template-columns: minmax(0, 1fr) 116px;
+    gap: 8px;
+    padding: 0 10px 0 0;
+  }
+
+  .quote-left-desktop {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  /* METRO */
+  .quote-metro {
+    padding: 8px 0;
+    top: 80px;
+  }
+  .quote-metro-line { left: 16px; top: 20px; bottom: 20px; }
+  .quote-metro-stop { padding: 5px 0; min-height: 38px; gap: 0; justify-content: center; }
+  .quote-metro-dot { width: 24px; height: 24px; }
+  .quote-metro-dot svg { width: 11px; height: 11px; }
+  .quote-metro-stop.is-active .quote-metro-dot { width: 30px; height: 30px; }
+  .quote-metro-stop.is-active .quote-metro-dot svg { width: 13px; height: 13px; }
+  .quote-metro-label { display: none; }
+
+  /* ÁREA */
+  .quote-scroll { height: 460px; border-radius: 12px; }
+  .quote-area { min-height: 460px; }
+  .quote-area-inner { padding: 14px 12px 12px; gap: 10px; }
+  .quote-area-header { gap: 9px; padding-bottom: 9px; }
+  .quote-area-header::before { left: -12px; width: 3px; }
+  .quote-area-icon { width: 34px; height: 34px; border-radius: 9px; }
+  .quote-area-icon svg { width: 17px; height: 17px; }
+  .quote-area-header h3 { font-size: 14.5px; letter-spacing: -.01em; margin-bottom: 2px; }
+  .quote-area-kicker { font-size: 8px; letter-spacing: .1em; }
+  .quote-area-desc { font-size: 10.5px; line-height: 1.35; }
+  .quote-area-badge { min-width: 20px; height: 20px; font-size: 10px; padding: 0 5px; }
+
+  /* OPCIONES */
+  .quote-area-options { gap: 4px; }
+  .quote-option { padding: 8px 10px; border-radius: 8px; }
+  .quote-option:hover { transform: none; }
+  .quote-option-main { gap: 7px; }
+  .quote-option-main input { width: 15px; height: 15px; margin-top: 2px; }
+  .quote-option-title { flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 2px; }
+  .quote-option-title strong { font-size: 11.5px; line-height: 1.25; }
+  .quote-option-price { font-size: 11px; }
+  .quote-option-desc { font-size: 10px; line-height: 1.3; }
+  .quote-option-toggle-features { font-size: 9px; padding: 3px 6px; margin-top: 5px; gap: 3px; }
+  .quote-option-toggle-features svg { width: 10px; height: 10px; }
+  .quote-option-features { padding: 6px 0 0 16px; }
+  .quote-option-features li { font-size: 10px; gap: 4px; }
+  .quote-option-features svg { width: 10px; height: 10px; }
+
+  /* BOTONES ANTERIOR/SIGUIENTE — MÁS PEQUEÑOS Y CENTRADOS */
+  .quote-area-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .quote-nav-btn {
+    padding: 4px 8px;
+    font-size: 8.5px;
+    min-height: 24px;
+    gap: 2px;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+  .quote-nav-btn svg { width: 10px; height: 10px; }
+  .quote-nav-next {
+    padding: 4px 10px !important;
+    min-height: 24px;
+    font-size: 8.5px;
+  }
+  .quote-nav-next svg { width: 10px; height: 10px; }
+
+  /* PANEL DERECHO */
+  .quote-summary { position: sticky; top: 80px; align-self: start; }
+  .quote-summary-card { padding: 10px 8px; border-radius: 10px; max-height: calc(100vh - 100px); }
+  .quote-kicker { font-size: 8px; letter-spacing: .06em; gap: 3px; margin-bottom: 4px; }
+  .quote-kicker svg { width: 9px; height: 9px; }
+  .quote-summary-card h3 { font-size: 8px; letter-spacing: .04em; margin-bottom: 2px; }
+  .quote-total { font-size: 20px; letter-spacing: -.02em; text-shadow: 0 0 18px rgba(57,255,154,.5); }
+  .quote-monthly { font-size: 9.5px; margin-top: 2px; }
+  .quote-summary-list { padding: 6px 0 0; margin: 6px 0 0; gap: 3px; max-height: 130px; }
+  .quote-summary-list li { font-size: 9px; gap: 4px; line-height: 1.2; }
+  .quote-empty-summary { font-size: 9px; padding-top: 6px; margin-top: 6px; }
+  .quote-not-included { padding-top: 6px; margin: 8px 0; gap: 2px; }
+  .quote-not-included strong { font-size: 7.5px; }
+  .quote-not-included p { font-size: 8.5px; line-height: 1.3; }
+  .quote-cta { padding: 7px 6px !important; font-size: 8.5px !important; min-height: 30px; gap: 4px !important; margin-bottom: 5px; }
+  .quote-cta svg { width: 11px; height: 11px; }
+  .quote-cta-secondary { padding: 7px 6px; font-size: 8.5px; min-height: 30px; gap: 4px; }
+  .quote-cta-secondary svg { width: 10px; height: 10px; }
+}
+
+/* Móvil muy pequeño */
+@media (max-width: 380px) {
+  .quote-layout {
+    grid-template-columns: minmax(0, 1fr) 100px;
+    gap: 6px;
+    padding: 0 8px 0 0;
+  }
+  .quote-left-desktop { grid-template-columns: 30px minmax(0, 1fr); gap: 4px; }
+  .quote-metro-line { left: 14px; }
+  .quote-metro-dot { width: 21px; height: 21px; }
+  .quote-metro-dot svg { width: 10px; height: 10px; }
+  .quote-metro-stop.is-active .quote-metro-dot { width: 26px; height: 26px; }
+  .quote-metro-stop.is-active .quote-metro-dot svg { width: 11px; height: 11px; }
+
+  .quote-scroll { height: 420px; }
+  .quote-area { min-height: 420px; }
+  .quote-area-inner { padding: 12px 10px; }
+  .quote-area-header h3 { font-size: 13.5px; }
+  .quote-option-title strong { font-size: 11px; }
+  .quote-option-price { font-size: 10.5px; }
+
+  /* Botones aún más pequeños */
+  .quote-area-nav { gap: 4px; padding-top: 6px; }
+  .quote-nav-btn { padding: 3px 6px; font-size: 8px; min-height: 22px; }
+  .quote-nav-btn svg { width: 9px; height: 9px; }
+  .quote-nav-next { padding: 3px 8px !important; font-size: 8px; min-height: 22px; }
+  .quote-nav-next svg { width: 9px; height: 9px; }
+
+  .quote-summary-card { padding: 8px 6px; }
+  .quote-total { font-size: 18px; }
+  .quote-summary-list li { font-size: 8.5px; }
+  .quote-cta { font-size: 8px !important; padding: 6px 4px !important; }
+  .quote-cta-secondary { font-size: 8px; padding: 6px 4px; }
+}
+/* ============================================
+   ADMIN — CONFIGURADOR DE PRESUPUESTOS
+   (bloques y opciones en el panel admin)
+   ============================================ */
+
+.quote-admin-blocks {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.quote-admin-block {
+  border: 1px solid var(--line);
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .25s ease;
+}
+.quote-admin-block:hover {
+  border-color: var(--gold);
+}
+
+.quote-admin-block-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #000;
+  border: 0;
+  color: var(--green);
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s ease;
+  font: inherit;
+}
+.quote-admin-block-header:hover {
+  background: rgba(217,169,87,.05);
+}
+.quote-admin-block-header h3 {
+  font-size: 15px;
+  letter-spacing: .04em;
+  margin: 0 0 3px;
+  font-weight: 800;
+  color: var(--gold-bright);
+  text-transform: uppercase;
+}
+.quote-admin-block-header:hover h3 {
+  color: var(--green-bright);
+}
+.quote-admin-block-header small {
+  color: var(--green);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  opacity: .6;
+}
+.quote-admin-block-header > span {
+  color: var(--green);
+  font-size: 12px;
+}
+
+.quote-admin-options {
+  padding: 6px 14px 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  background: #000;
+}
+
+.quote-admin-option {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: #000;
+  border-radius: 10px;
+  transition: all .2s ease;
+}
+.quote-admin-option:hover {
+  border-color: var(--gold);
+  background: rgba(217,169,87,.05);
+}
+.quote-admin-option.is-inactive {
+  opacity: .45;
+}
+
+.quote-admin-option-info {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.quote-admin-option-info strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  transition: color .25s;
+}
+.quote-admin-option:hover .quote-admin-option-info strong {
+  color: var(--gold-bright);
+}
+.quote-admin-option-info small {
+  color: var(--green);
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: .7;
+}
+
+.quote-admin-option-price {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--green-bright);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding: 5px 11px;
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  background: #000;
+}
+
+.quote-admin-option-actions {
+  display: flex;
+  gap: 4px;
+}
+.quote-admin-option-actions button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  background: #000;
+  color: var(--green);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .2s ease;
+  font-size: 14px;
+  padding: 0;
+}
+.quote-admin-option-actions button:hover {
+  color: var(--gold-bright);
+  border-color: var(--gold);
+  background: rgba(217,169,87,.1);
+}
+.quote-admin-option-actions button:last-child:hover {
+  color: #f0a1a1;
+  border-color: #f0a1a1;
+  background: rgba(200,120,120,.1);
+}
+
+/* Botón "Añadir opción" */
+.quote-admin-options .admin-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #000;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--green);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: all .2s ease;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.quote-admin-options .admin-action:hover {
+  color: var(--gold-bright);
+  border-color: var(--gold);
+  background: rgba(217,169,87,.05);
+}
+
+/* ============================================
+   ADMIN — RESPONSIVE MÓVIL
+   ============================================ */
+@media (max-width: 760px) {
+  .quote-admin-block-header {
+    padding: 13px 15px;
+  }
+  .quote-admin-block-header h3 {
+    font-size: 13px;
+  }
+  .quote-admin-block-header small {
+    font-size: 9.5px;
+  }
+  .quote-admin-options {
+    padding: 6px 10px 12px;
+    gap: 6px;
+  }
+  .quote-admin-option {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 10px 12px;
+  }
+  .quote-admin-option-info strong {
+    font-size: 12.5px;
+  }
+  .quote-admin-option-info small {
+    font-size: 10.5px;
+  }
+  .quote-admin-option-price {
+    justify-self: flex-start;
+    font-size: 12px;
+    padding: 4px 9px;
+  }
+  .quote-admin-option-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+  .quote-admin-option-actions button {
+    width: 30px;
+    height: 30px;
+  }
+}
