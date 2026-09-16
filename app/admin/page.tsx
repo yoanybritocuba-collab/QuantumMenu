@@ -38,6 +38,12 @@ type Project = {
   image: string
   accent: string
   tags: string[]
+  includes_es?: string[]
+  includes_ca?: string[]
+  includes_en?: string[]
+  excludes_es?: string[]
+  excludes_ca?: string[]
+  excludes_en?: string[]
   published: boolean
 }
 
@@ -95,6 +101,12 @@ const emptyProject: Project = {
   image: '',
   accent: '#39ff9a',
   tags: [],
+  includes_es: [],
+  includes_ca: [],
+  includes_en: [],
+  excludes_es: [],
+  excludes_ca: [],
+  excludes_en: [],
   published: true,
 }
 
@@ -112,6 +124,8 @@ export default function AdminPage() {
   const [saved, setSaved] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [showProjectForm, setShowProjectForm] = useState(false)
+  const [translating, setTranslating] = useState(false)
+  const { translate } = useTranslation()
   const [settings, setSettings] = useState({
     name: 'Yoany Brito',
     email: 'yoanybritocuba@gmail.com',
@@ -182,9 +196,37 @@ export default function AdminPage() {
   }
   const saveProject = async () => {
     if (!editingProject?.title_es.trim()) return
+    setTranslating(true)
     const supabase = createClient()
 
-    const { id, created_at, updated_at, ...rest } = editingProject as any
+    // Traducir automáticamente los campos que falten
+    const base = editingProject
+    const title_ca = base.title_ca || await translate(base.title_es, 'ca')
+    const title_en = base.title_en || await translate(base.title_es, 'en')
+    const type_ca = base.type_ca || await translate(base.type_es, 'ca')
+    const type_en = base.type_en || await translate(base.type_es, 'en')
+
+    const includes_es = base.includes_es || []
+    const includes_ca = base.includes_ca?.length ? base.includes_ca : await Promise.all(includes_es.map((i) => translate(i, 'ca')))
+    const includes_en = base.includes_en?.length ? base.includes_en : await Promise.all(includes_es.map((i) => translate(i, 'en')))
+
+    const excludes_es = base.excludes_es || []
+    const excludes_ca = base.excludes_ca?.length ? base.excludes_ca : await Promise.all(excludes_es.map((i) => translate(i, 'ca')))
+    const excludes_en = base.excludes_en?.length ? base.excludes_en : await Promise.all(excludes_es.map((i) => translate(i, 'en')))
+
+    const fullProject = {
+      ...base,
+      title_ca,
+      title_en,
+      type_ca,
+      type_en,
+      includes_ca,
+      includes_en,
+      excludes_ca,
+      excludes_en,
+    }
+
+    const { id, created_at, updated_at, ...rest } = fullProject as any
 
     if (editingProject.id === 0) {
       const { data, error } = await supabase.from('projects').insert(rest).select().single()
@@ -193,11 +235,12 @@ export default function AdminPage() {
     } else {
       const { error } = await supabase.from('projects').update(rest).eq('id', editingProject.id)
       if (error) alert('Error: ' + error.message)
-      else setProjects((current) => current.map((p) => (p.id === editingProject.id ? editingProject : p)))
+      else setProjects((current) => current.map((p) => (p.id === editingProject.id ? fullProject : p)))
     }
 
     setShowProjectForm(false)
     setEditingProject(null)
+    setTranslating(false)
     flashSaved()
   }
   const deleteProject = async (id: number) => {
@@ -549,13 +592,40 @@ export default function AdminPage() {
               <input type="text" value={editingProject.accent} onChange={(e) => setEditingProject({ ...editingProject, accent: e.target.value })} placeholder="#39ff9a" />
             </label>
             <label>
-              Etiquetas (separadas por coma)
+              Etiquetas cortas (separadas por coma)
               <input
                 value={editingProject.tags.join(', ')}
                 onChange={(e) => setEditingProject({ ...editingProject, tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) })}
                 placeholder="QR, Products, Mobile"
               />
             </label>
+
+            <label>
+              ✅ Qué incluye (una cosa por línea)
+              <textarea
+                rows={5}
+                value={(editingProject.includes_es || []).join('\n')}
+                onChange={(e) => setEditingProject({ ...editingProject, includes_es: e.target.value.split('\n').filter((l) => l.trim()) })}
+                placeholder={'Menú QR (carta digital)\nQR físico para las mesas\nActualizable por ti mismo'}
+              />
+              <small style={{ color: 'var(--muted)', fontSize: 11 }}>
+                Se traducirá automáticamente al catalán e inglés al guardar.
+              </small>
+            </label>
+
+            <label>
+              ❌ No incluye (una cosa por línea)
+              <textarea
+                rows={4}
+                value={(editingProject.excludes_es || []).join('\n')}
+                onChange={(e) => setEditingProject({ ...editingProject, excludes_es: e.target.value.split('\n').filter((l) => l.trim()) })}
+                placeholder={'Dominio propio (a cargo del cliente)\nCorreos empresariales (a cargo del cliente)'}
+              />
+              <small style={{ color: 'var(--muted)', fontSize: 11 }}>
+                Se traducirá automáticamente al catalán e inglés al guardar.
+              </small>
+            </label>
+
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, flexDirection: 'row' }}>
               <input type="checkbox" checked={editingProject.published} onChange={(e) => setEditingProject({ ...editingProject, published: e.target.checked })} />
               Publicado (visible en la web)
@@ -563,8 +633,8 @@ export default function AdminPage() {
 
             <div className="modal-actions">
               <button className="text-button" onClick={() => setShowProjectForm(false)}>Cancelar</button>
-              <button className="button button-primary admin-button" onClick={saveProject}>
-                <Check size={15} /> Guardar proyecto
+              <button className="button button-primary admin-button" onClick={saveProject} disabled={translating}>
+                <Check size={15} /> {translating ? 'Guardando y traduciendo...' : 'Guardar y traducir'}
               </button>
             </div>
           </section>

@@ -174,7 +174,6 @@ export default function Page() {
         <div className="hero-visual" aria-label="Featured work carousel">
           {['/hero-dev-01.png', '/hero-dev-02.png', '/hero-dev-03.png', '/dev-workspace-01.png', '/dev-workspace-02.png', '/dev-workspace-03.png'].map((image, index) => <div key={image} className={`hero-slide ${activeSlide === index ? 'active' : ''}`} style={{ backgroundImage: `url(${image})` }} />)}
           <div className="hero-visual-overlay" />
-          <div className="hero-counter"><span>0{activeSlide + 1}</span><span className="counter-line" /><span>06</span></div>
           <div className="hero-caption">SELECTED IMAGE / 0{activeSlide + 1}<br /><strong>VISUAL SYSTEMS FOR THE WEB</strong></div>
         </div>
         <div className="hero-copy reveal">

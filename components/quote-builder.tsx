@@ -151,7 +151,7 @@ export function QuoteBuilder({ lang = 'es' }: { lang?: Lang }) {
     return encodeURIComponent(msg)
   }, [selected, options, blocks, totals, lang, t])
 
-  if (loading) return <section className="quote-section section-wrap"><p>Cargando...</p></section>
+    if (loading) return <section className="quote-section section-wrap"><p>{lang === 'es' ? 'Cargando...' : lang === 'ca' ? 'Carregant...' : 'Loading...'}</p></section>
 
   return (
     <section id="presupuesto" className="quote-section section-wrap">
@@ -203,7 +203,7 @@ export function QuoteBuilder({ lang = 'es' }: { lang?: Lang }) {
                               <div className="quote-option-title">
                                 <strong>{getName(opt)}</strong>
                                 <span className="quote-option-price">
-                                  {opt.price === 0 ? 'Gratis' : `+${opt.price}${opt.unit}`}
+{opt.price === 0 ? (lang === 'es' ? 'Gratis' : lang === 'ca' ? 'Gratuït' : 'Free') : `+${opt.price}${opt.unit}`}
                                 </span>
                               </div>
                               {getDesc(opt) && <p className="quote-option-desc">{getDesc(opt)}</p>}
