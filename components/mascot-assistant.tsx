@@ -23,7 +23,7 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
   const [introTyped, setIntroTyped] = useState('')
   const [introDone, setIntroDone] = useState(false)
 
-  const [isStandby, setIsStandby] = useState(false)
+  const [isDeepSleep, setIsDeepSleep] = useState(false)
   const [nearCursor, setNearCursor] = useState(false)
 
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: -1, y: -1 })
@@ -43,7 +43,8 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
       greetEvening: 'Buenas noches',
       help: '¿En qué te puedo ayudar?',
       linger: 'Me quedo por aquí si necesitas algo',
-      chatIntro: 'Hola, soy Nova. ¿En qué te puedo ayudar?',
+      hoverCartel: '¿En qué puedo ayudarte?',
+      chatIntro: 'Soy Nova, la asistente de QuantumMenu. ¿En qué te puedo ayudar?',
       farewell: 'Gracias por visitar QuantumMenu. Aquí estoy si necesitas algo más.',
       newChat: 'Nuevo chat',
       thinking: 'Nova está pensando',
@@ -61,7 +62,8 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
       greetEvening: 'Bona nit',
       help: 'En què et puc ajudar?',
       linger: 'Em quedo per aquí si necessites res',
-      chatIntro: 'Hola, sóc la Nova. En què et puc ajudar?',
+      hoverCartel: 'En què puc ajudar-te?',
+      chatIntro: 'Sóc la Nova, l\'assistenta de QuantumMenu. En què et puc ajudar?',
       farewell: 'Gràcies per visitar QuantumMenu. Aquí estic si necessites res més.',
       newChat: 'Nou xat',
       thinking: 'Nova està pensant',
@@ -79,7 +81,8 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
       greetEvening: 'Good evening',
       help: 'How can I help you?',
       linger: 'I\'ll stay around if you need anything',
-      chatIntro: 'Hi, I\'m Nova. How can I help you?',
+      hoverCartel: 'How can I help you?',
+      chatIntro: 'I\'m Nova, QuantumMenu\'s assistant. How can I help you?',
       farewell: 'Thanks for visiting QuantumMenu. I\'m here if you need anything else.',
       newChat: 'New chat',
       thinking: 'Nova is thinking',
@@ -173,6 +176,10 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
               setBubbleText('')
               typeText(t.linger, () => {
                 setPhase('linger')
+                addTimeout(() => {
+                  setBubbleText('')
+                  setIsDeepSleep(true)
+                }, 5000)
               }, 30)
             }, 2000)
           }, 25)
@@ -187,38 +194,38 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang])
 
-  // ==== Standby ====
+  // ==== Detección del cursor SOBRE el robot ====
   useEffect(() => {
     if (open) {
-      setNearCursor(true)
+      setNearCursor(false)
       return
     }
     const handleMouseMove = (e: MouseEvent) => {
       const container = containerRef.current
       if (!container) return
       const rect = container.getBoundingClientRect()
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-      const distance = Math.sqrt(
-        Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
-      )
-      setNearCursor(distance < 180)
+      const margin = 40
+      const inside =
+        e.clientX >= rect.left - margin &&
+        e.clientX <= rect.right + margin &&
+        e.clientY >= rect.top - margin &&
+        e.clientY <= rect.bottom + margin
+      setNearCursor(inside)
     }
     document.addEventListener('mousemove', handleMouseMove)
     return () => document.removeEventListener('mousemove', handleMouseMove)
   }, [open])
 
+  // ==== Despertar si el cursor está cerca ====
   useEffect(() => {
     if (open || nearCursor || isDragging) {
-      setIsStandby(false)
+      setIsDeepSleep(false)
       return
     }
-    if (phase !== 'linger' && phase !== 'farewell' && phase !== 'silenced') {
-      setIsStandby(false)
-      return
+    if (phase === 'linger' || phase === 'farewell' || phase === 'silenced') {
+      const timer = window.setTimeout(() => setIsDeepSleep(true), 3000)
+      return () => window.clearTimeout(timer)
     }
-    const timer = window.setTimeout(() => setIsStandby(true), 8000)
-    return () => window.clearTimeout(timer)
   }, [open, nearCursor, isDragging, phase])
 
   // ==== Chat ====
@@ -264,6 +271,7 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
     cancelledRef.current = true
     clearAllTimeouts()
     cancelledRef.current = false
+    setIsDeepSleep(false)
     setOpen(true)
     if (!hasOpenedOnce) {
       setHasOpenedOnce(true)
@@ -286,11 +294,21 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
     if (hasChatted) {
       addTimeout(() => {
         setBubbleText('')
-        typeText(t.farewell, () => setPhase('farewell'), 25)
+        typeText(t.farewell, () => {
+          setPhase('farewell')
+          addTimeout(() => {
+            setBubbleText('')
+            setIsDeepSleep(true)
+          }, 5000)
+        }, 25)
       }, 500)
     } else {
       setBubbleText(t.linger)
       setPhase('linger')
+      addTimeout(() => {
+        setBubbleText('')
+        setIsDeepSleep(true)
+      }, 5000)
     }
   }
 
@@ -301,6 +319,7 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
     setIntroDone(false)
     setIntroTyped('')
     setHasOpenedOnce(false)
+    setIsDeepSleep(false)
     cancelledRef.current = true
     clearAllTimeouts()
     cancelledRef.current = false
@@ -371,18 +390,14 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
     if (!hasChatted) setHasChatted(true)
   }
 
-  const silenceBubble = () => {
-    setPhase('silenced')
-    setBubbleText('')
-    setShowCursor(false)
-    cancelledRef.current = true
-    clearAllTimeouts()
-  }
-
   const containerStyle: React.CSSProperties =
     pos.x !== -1
       ? { left: `${pos.x}px`, top: `${pos.y}px`, right: 'auto', bottom: 'auto' }
       : {}
+
+  const bubbleVisible = bubbleText && phase !== 'silenced' && !open && !isDeepSleep
+  // ⚡ CLAVE: el cartel aparece cuando el cursor está encima (sin importar deep sleep)
+  const hoverCartelVisible = nearCursor && !open
 
   return (
     <>
@@ -451,10 +466,10 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
 
       <div
         ref={containerRef}
-        className={`mascot-assistant ${open ? 'is-open' : ''} ${isDragging ? 'is-dragging' : ''} ${pos.x !== -1 ? 'is-positioned' : ''} ${isStandby ? 'is-standby' : ''}`}
+        className={`mascot-assistant ${open ? 'is-open' : ''} ${isDragging ? 'is-dragging' : ''} ${pos.x !== -1 ? 'is-positioned' : ''} ${isDeepSleep ? 'is-deep-sleep' : ''} ${nearCursor ? 'is-near-cursor' : ''}`}
         style={containerStyle}
       >
-        {!open && bubbleText && phase !== 'silenced' && (
+        {bubbleVisible && (
           <div
             className="mascot-speech"
             aria-live="polite"
@@ -467,6 +482,12 @@ export function MascotAssistant({ lang = 'es' }: { lang?: MascotLang }) {
           >
             {bubbleText}
             {showCursor && <span className="bubble-cursor" aria-hidden="true">▍</span>}
+          </div>
+        )}
+
+        {hoverCartelVisible && (
+          <div className="mascot-speech mascot-speech-hover" aria-live="polite">
+            {t.hoverCartel}
           </div>
         )}
 
